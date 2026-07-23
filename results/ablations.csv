@@ -1,0 +1,5 @@
+variant,final_accuracy_percent,delta_points
+Full workflow,86.73,0.00
+No extractor SFT,83.73,-3.00
+No schema/few-shot,79.18,-7.55
+No tool,69.46,-17.27

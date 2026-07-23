@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "artifact_status": "anonymous submitted-manuscript aggregate",
+  "dataset": {
+    "name": "MedCalc-Bench Verified",
+    "version": "v1.0.7",
+    "test_cases": 1100,
+    "test_csv_sha256": "91d222234a5a427de1127e864a199a51af9e709357352423c8a22857476e7abf"
+  },
+  "fixed_tools": {
+    "directory": "artifacts/calculators/gpt_5_5",
+    "file_count": 55,
+    "checksums": "artifacts/calculators/gpt_5_5/SHA256SUMS",
+    "historical_identifier": "api_gpt-5-5_r5_s8_b1000000_260519_090713"
+  },
+  "extractor": {
+    "base_model": "Qwen3-8B",
+    "adapter_label": "qwen3_8b_sft_checkpoint_1186",
+    "adapter_distributed": false
+  },
+  "submitted_configuration": {
+    "case_search_top_k": 3,
+    "disable_unit_normalizer": true,
+    "judge_extraction_source": "raw",
+    "tool_input_policy": "raw_only",
+    "legacy_evaluator": true
+  },
+  "submitted_aggregate": {
+    "correct_cases": 954,
+    "total_cases": 1100,
+    "final_accuracy": 0.867273,
+    "matched_parameters": 5241,
+    "total_parameters": 5377,
+    "parameter_match_rate": 0.974707,
+    "fixed_tool_correct_cases": 1044,
+    "fixed_tool_accuracy": 0.949091,
+    "fixed_tool_runtime_errors": 0
+  },
+  "independent_fixed_tool_check": {
+    "command": "python scripts/evaluate_calculators.py --legacy-evaluator",
+    "expected_correct_cases": 1044,
+    "expected_accuracy": 0.949091,
+    "expected_runtime_errors": 0
+  },
+  "limitations": [
+    "The extraction adapter and case-level model outputs were absent from the source bundle.",
+    "The submitted end-to-end aggregate cannot be independently regenerated without that adapter.",
+    "The calculator-69 parser correction is documented separately and is not substituted into the submitted aggregate."
+  ]
+}

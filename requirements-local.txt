@@ -1,0 +1,5 @@
+-r requirements.txt
+numpy>=1.26,<3
+sentence-transformers>=2.7,<6
+transformers>=4.44,<6
+vllm>=0.5

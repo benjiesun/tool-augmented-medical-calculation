@@ -1,0 +1,80 @@
+# Secrets and local configuration
+.env
+.env.*
+*.env
+runtime.env
+!*.env.example
+!configs/*.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+
+# Editors and notebooks
+.idea/
+.vscode/
+.ipynb_checkpoints/
+*.swp
+*.swo
+
+# Downloaded datasets and generated case-level artifacts
+data/raw/
+data/downloads/
+data/processed/train_data.csv
+data/processed/test_data.csv
+data/processed/one_shot_data.csv
+data/processed/case_library_merged_v1_8.json
+output/
+outputs/
+result/
+judge/
+logs/
+*.log
+
+# Mutable memory and generated registries
+artifacts/memory/case_memory.jsonl
+artifacts/memory/missing_params_memory.jsonl
+artifacts/memory/tool_build_feedback_memory.jsonl
+artifacts/memory/tool_specs.jsonl
+artifacts/calculators/**/tool_registry.jsonl
+artifacts/tool_builder/
+rag_docs/
+
+# Models and checkpoints
+models/
+checkpoints/
+adapters/
+*.bin
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+*.tar
+*.tar.gz
+*.zip
+
+# Manuscripts and submission material
+paper.pdf
+papers/
+*.docx
+*.pptx
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+__MACOSX/
+._*

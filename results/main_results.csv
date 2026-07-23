@@ -1,0 +1,12 @@
+method,model,final_accuracy_percent,notes
+MedRaC,LLaMA3.1-8B-Instruct,64.68,Reported on the authors' cleaned subset
+Open-book guided prompting,GLM-4.6V,82.00,Reported reference
+Open-book prompting,GLM-4.7,85.50,Not evaluated on the full test set
+Code agent (Python REPL),Claude Sonnet 4.6,86.24,Reported five-run average
+Direct prompting,Qwen3-8B,14.00,Full verified test set
+Zero-shot CoT,Qwen3-8B,31.55,Full verified test set
+One-shot prompting,Qwen3-8B,62.73,Full verified test set
+One-shot prompting,DeepSeek-R1-Distill-Qwen-7B,55.45,Full verified test set
+One-shot prompting,Llama-3.1-8B,38.36,Full verified test set
+SFT-only,Qwen3-8B,69.46,Full verified test set
+Tool-augmented framework,GPT-5.5 tools + Qwen3-8B-SFT extraction,86.73,Submitted legacy-evaluator result
