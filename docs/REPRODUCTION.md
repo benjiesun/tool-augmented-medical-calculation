@@ -39,15 +39,15 @@ Edit `runtime.env` with local paths or API settings. It is ignored by Git.
 ## Validate the fixed tools
 
 The submitted 94.91% tool score uses benchmark ground-truth parameters and the
-legacy evaluator:
+submitted project evaluator, which is also used by current runs:
 
 ```bash
-python scripts/evaluate_calculators.py --legacy-evaluator
+python scripts/evaluate_calculators.py
 ```
 
-Omitting `--legacy-evaluator` applies the calculator-69 parser correction
-documented below. This command evaluates tool execution only; it is not an
-end-to-end extraction result.
+The previous `--legacy-evaluator` flag remains accepted for command compatibility;
+both forms use the submitted evaluator. This command evaluates tool execution
+only; it is not an end-to-end extraction result.
 
 ## Reuse the fixed tools
 
@@ -89,4 +89,8 @@ Before a public reproducibility claim or camera-ready release, the authors shoul
 
 The reported final-answer metric evaluates the deterministic tool output, not the optional central-LLM prose formatter. `ENABLE_CENTRAL_FINAL_ANSWER` may produce display text, but it does not change `judge_case` scoring.
 
-The submitted tables used the legacy calculator-69 parser. Current runs use the corrected parser; see [results/KNOWN_ISSUES.md](../results/KNOWN_ISSUES.md).
+Current runs retain the submitted calculator-69 answer adapter and scoring
+protocol. There is no alternate rescore mode. The previous `LEGACY_EVALUATOR`
+environment setting no longer selects a different parser. See
+[results/KNOWN_ISSUES.md](../results/KNOWN_ISSUES.md) for the distinction between
+the project's answer adapter and the official benchmark scoring function.

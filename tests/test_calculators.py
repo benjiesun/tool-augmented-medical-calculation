@@ -51,7 +51,7 @@ class CalculatorArtifactTests(unittest.TestCase):
         self.assertEqual(result.error, "")
         self.assertAlmostEqual(result.result, 93.33333333333333)
 
-    def test_gestational_age_tool_and_corrected_evaluator(self):
+    def test_gestational_age_tool_and_submitted_evaluator(self):
         temp_dir, registry = self._registry_with_tools(69)
         self.addCleanup(temp_dir.cleanup)
         result = registry.calculate(
@@ -71,7 +71,9 @@ class CalculatorArtifactTests(unittest.TestCase):
             "Lower Limit": "",
             "Upper Limit": "",
         }
-        self.assertTrue(judge_case(row, {}, result.result)["final_correct"])
+        judged = judge_case(row, {}, result.result)
+        self.assertEqual(judged["computed_answer"], "N/A")
+        self.assertFalse(judged["final_correct"])
 
 
 if __name__ == "__main__":

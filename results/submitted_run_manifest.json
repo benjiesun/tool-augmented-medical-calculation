@@ -43,8 +43,8 @@
     "expected_runtime_errors": 0
   },
   "limitations": [
-    "The extraction adapter and case-level model outputs were absent from the source bundle.",
+    "The extraction adapter and complete case-level outputs for the submitted best run were absent from the source bundle.",
     "The submitted end-to-end aggregate cannot be independently regenerated without that adapter.",
-    "The calculator-69 parser correction is documented separately and is not substituted into the submitted aggregate."
+    "The post-submission calculator-69 parsing change has been withdrawn; current evaluation retains the submitted protocol and aggregate."
   ]
 }

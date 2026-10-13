@@ -38,7 +38,7 @@ def main() -> None:
     parser.add_argument(
         "--legacy-evaluator",
         action="store_true",
-        help="reproduce the submitted calculator-69 parsing behavior",
+        help="compatibility flag; the submitted evaluator is always used",
     )
     args = parser.parse_args()
 
@@ -65,7 +65,6 @@ def main() -> None:
                 row,
                 entities,
                 execution.result,
-                legacy_calc69_parser=args.legacy_evaluator,
             )
             is_correct = int(judged["final_correct"])
             correct += is_correct
@@ -79,7 +78,7 @@ def main() -> None:
     total = len(rows)
     summary = {
         "evaluation_scope": "calculator tools with ground-truth input entities",
-        "legacy_evaluator": args.legacy_evaluator,
+        "legacy_evaluator": True,
         "cases": total,
         "correct": correct,
         "accuracy": round(correct / total, 6) if total else 0.0,

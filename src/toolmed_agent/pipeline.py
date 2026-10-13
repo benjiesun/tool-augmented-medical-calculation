@@ -321,7 +321,6 @@ class CentralHost:
         self.tool_registry = CalculationToolRegistry(str(self.calc_tools_dir))
 
         self.max_reflect_rounds = safe_int(_env("MAX_REFLECT_ROUNDS", "1")) or 1
-        self.legacy_evaluator = bool_env(_env("LEGACY_EVALUATOR", "0"), default=False)
         judge_source = _env("JUDGE_EXTRACTION_SOURCE", "raw").strip().lower()
         self.judge_extraction_source = judge_source if judge_source in {"normalized", "raw"} else "raw"
         policy = _env("TOOL_INPUT_POLICY", "raw_first").strip().lower()
@@ -911,13 +910,11 @@ class CentralHost:
             row=row,
             extracted_entities=extracted_entities,
             tool_result_raw=tool_exec.result,
-            legacy_calc69_parser=self.legacy_evaluator,
         )
         judge_normalized = judge_case(
             row=row,
             extracted_entities=tool_input,
             tool_result_raw=tool_exec.result,
-            legacy_calc69_parser=self.legacy_evaluator,
         )
         judge = judge_raw if self.judge_extraction_source == "raw" else judge_normalized
 
@@ -1048,7 +1045,7 @@ class CentralHost:
                 "norm_llm_shared_with_central": bool(self.norm_llm_shared_with_central),
                 "extract_llm_shared_with_central": bool(self.extract_llm_shared_with_central),
                 "judge_extraction_source": self.judge_extraction_source,
-                "legacy_evaluator": bool(self.legacy_evaluator),
+                "legacy_evaluator": True,
                 "tool_input_policy": self.tool_input_policy,
                 "enable_central_final_answer": bool(self.enable_central_final_answer),
                 "require_core_llms_available": bool(self.require_core_llms_available),

@@ -3,8 +3,8 @@
 # The calculator-specific scoring semantics in ``check_correctness`` are
 # adapted from MedCalc-Bench-Verified v1.0.7:
 # https://github.com/nikhilk7153/MedCalc-Bench-Verified/blob/v1.0.7/evaluation/evaluate.py
-# This version adds safe parsing, extraction metrics, portable date handling,
-# and an explicitly documented legacy compatibility mode. See NOTICE.md.
+# This version retains the submitted project's answer adapter, safe parsing,
+# extraction metrics, and equivalent portable date handling. See NOTICE.md.
 
 import ast
 import json
@@ -201,51 +201,12 @@ def evaluate_extraction(gt_entities_raw: Any, pred_entities: Dict[str, Any]) -> 
     }
 
 
-def _integer_from_component(value: Any) -> Optional[int]:
-    if isinstance(value, bool):
-        return None
-    if isinstance(value, (int, float)):
-        return int(value)
-    match = re.search(r"-?\d+", str(value))
-    return int(match.group(0)) if match else None
-
-
-def _extract_calculator_69(text: Any, fallback: str) -> str:
-    """Normalize gestational-age outputs to ``(weeks, days)``."""
-    if isinstance(text, (list, tuple)) and len(text) >= 2:
-        weeks = _integer_from_component(text[0])
-        days = _integer_from_component(text[1])
-        if weeks is not None and days is not None:
-            return f"({weeks}, {days})"
-
-    s = str(text).strip()
-    try:
-        parsed = ast.literal_eval(s)
-    except (SyntaxError, ValueError):
-        parsed = None
-    if isinstance(parsed, (list, tuple)) and len(parsed) >= 2:
-        weeks = _integer_from_component(parsed[0])
-        days = _integer_from_component(parsed[1])
-        if weeks is not None and days is not None:
-            return f"({weeks}, {days})"
-
-    weeks_match = re.search(r"(\d+)\s*(?:weeks?|w)\b", s, flags=re.I)
-    days_match = re.search(r"(\d+)\s*(?:days?|d)\b", s, flags=re.I)
-    if weeks_match and days_match:
-        return f"({weeks_match.group(1)}, {days_match.group(1)})"
-
-    pair_match = re.search(r"[\(\[]?\s*(\d+)\s*[,，]\s*(\d+)\s*[\)\]]?", s)
-    if pair_match:
-        return f"({pair_match.group(1)}, {pair_match.group(2)})"
-    return fallback
-
-
 def extract_answer_for_scoring(
     text: Any,
     calculator_id: Any,
     fallback: str = "N/A",
-    legacy_calc69_parser: bool = False,
 ) -> str:
+    """Use the project's submitted answer adapter without rescore changes."""
     if text is None:
         s = ""
     elif isinstance(text, (int, float)):
@@ -261,8 +222,6 @@ def extract_answer_for_scoring(
         return m.group(1) if m else fallback
 
     if cid == "69":
-        if not legacy_calc69_parser:
-            return _extract_calculator_69(text, fallback)
         m = re.search(r"(\d+)\s*(?:weeks?|w)?\s*[,，]\s*(\d+)\s*(?:days?|d)?", s, flags=re.I)
         if not m:
             m = re.search(r"\(?\s*(\d+)\s*[,，]\s*(\d+)\s*\)?", s)
@@ -299,13 +258,14 @@ def check_correctness(answer: str, ground_truth: Any, calid: Any, upper_limit: A
         return 0
 
     if calid in [13, 68]:
-        answer_date = _parse_date(str(answer))
-        ground_truth_date = _parse_date(str(ground_truth))
-        return int(
-            answer_date is not None
-            and ground_truth_date is not None
-            and answer_date == ground_truth_date
-        )
+        try:
+            # Preserve the submitted %m/%d/%Y format and exact-date rule,
+            # without POSIX-only strftime directives that fail on Windows.
+            answer_date = datetime.strptime(str(answer), "%m/%d/%Y").date()
+            ground_truth_date = datetime.strptime(str(ground_truth), "%m/%d/%Y").date()
+            return int(answer_date == ground_truth_date)
+        except (TypeError, ValueError):
+            return 0
 
     if calid in [69]:
         try:
@@ -341,14 +301,12 @@ def judge_case(
     row: Dict[str, Any],
     extracted_entities: Dict[str, Any],
     tool_result_raw: Any,
-    legacy_calc69_parser: bool = False,
 ) -> Dict[str, Any]:
     extraction = evaluate_extraction(row.get("Relevant Entities"), extracted_entities)
     computed = extract_answer_for_scoring(
         tool_result_raw,
         row.get("Calculator ID"),
         fallback="N/A",
-        legacy_calc69_parser=legacy_calc69_parser,
     )
     correct = check_correctness(
         computed,

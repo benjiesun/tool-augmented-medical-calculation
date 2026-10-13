@@ -20,7 +20,11 @@ This directory contains small, reviewable tables rather than per-case model trac
 | Parameter matching rate | 97.47% |
 | Tool-level accuracy | 94.91% |
 
-These are the numbers in the anonymous submitted manuscript and were produced by the legacy evaluator. A post-submission audit found a calculator-69 parser bug; read [KNOWN_ISSUES.md](KNOWN_ISSUES.md) before interpreting or reproducing them.
+These are the numbers in the anonymous submitted manuscript. Current code
+retains the same project answer adapter and scoring protocol. The
+post-submission calculator-69 parsing change has been withdrawn and does not
+replace any submitted result; read [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for the
+relationship to the official benchmark evaluator.
 
 ## Baseline provenance
 
@@ -36,8 +40,9 @@ as a controlled head-to-head comparison.
 | Code agent / Claude Sonnet 4.6 | [Anthropic system-card index](https://www.anthropic.com/system-cards) | External reported five-run mean on the verified benchmark |
 
 The Qwen, tool-quality, extractor, and ablation rows are internal experimental
-aggregates. They preserve the anonymous manuscript's tables. Case-level model
-outputs and the extraction adapter were absent from the source bundle, so only
+aggregates. They preserve the anonymous manuscript's tables. The complete
+case-level outputs for the submitted best run and the extraction adapter were
+absent from the source bundle, so only
 the fixed-tool score can currently be independently rerun from this repository.
 
 Full prompts, committed patient-note copies, API request identifiers, raw

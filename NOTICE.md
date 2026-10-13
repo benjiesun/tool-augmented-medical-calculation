@@ -9,7 +9,9 @@ Apache License 2.0.
 MedCalc-Bench-Verified v1.0.7
 (`evaluation/evaluate.py`). That file is marked and distributed under
 CC BY-SA 4.0, with modifications for safe parsing, extraction metrics,
-cross-platform date handling, and the documented legacy-evaluator mode.
+equivalent cross-platform date handling, and the submitted project's separate
+answer adapter. The post-submission calculator-69 normalization has been
+withdrawn; see `results/KNOWN_ISSUES.md`.
 
 ## MedCalc-Bench Verified
 

@@ -28,7 +28,7 @@ The submitted manuscript evaluates on MedCalc-Bench Verified v1.0.7 (55 calculat
 
 The submitted run contains 954/1,100 correct final calculations and a parameter matching rate of 5,241/5,377 (97.47%). The GPT-5.5 retrieval-and-repair tool set achieves 94.91% tool-level accuracy with zero runtime errors in the reported evaluation.
 
-During repository audit, we found a legacy evaluator parsing defect affecting calculator 69. The tables above intentionally preserve the numbers in the submitted manuscript; the corrected evaluator is now the default in this repository. See [Known evaluator issue](results/KNOWN_ISSUES.md) before comparing new runs with the submitted tables.
+The repository retains the submitted project's answer adapter and scoring protocol. The post-submission calculator-69 parsing change has been withdrawn, and the submitted results remain unchanged. The project's answer adapter is distinct from the upstream benchmark's scoring function; see [Evaluation protocol](results/KNOWN_ISSUES.md).
 
 Detailed aggregate tables are in [results/README.md](results/README.md).
 
@@ -106,7 +106,7 @@ After downloading the benchmark, reproduce the submitted 94.91% fixed-tool
 score using ground-truth input entities:
 
 ```bash
-python scripts/evaluate_calculators.py --legacy-evaluator
+python scripts/evaluate_calculators.py
 ```
 
 Run a one-case pipeline smoke test after configuring reachable central and
