@@ -7,6 +7,7 @@ import ast
 import hashlib
 import json
 import re
+import struct
 import sys
 from pathlib import Path
 
@@ -150,6 +151,26 @@ def validate_note_free_templates(errors: list[str]) -> None:
             errors.append(f"invalid case-library template: {relative}: {exc}")
 
 
+def validate_manuscript_figure(errors: list[str]) -> None:
+    image_path = ROOT / "assets" / "figure1.png"
+    provenance_path = ROOT / "assets" / "figure1.source.json"
+    try:
+        metadata = json.loads(provenance_path.read_text(encoding="utf-8"))
+        data = image_path.read_bytes()
+        if metadata.get("image_file") != image_path.name:
+            errors.append("figure provenance names a different image")
+        if hashlib.sha256(data).hexdigest() != metadata.get("image_sha256"):
+            errors.append("manuscript Figure 1 checksum mismatch")
+        if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+            errors.append("manuscript Figure 1 is not a PNG")
+            return
+        width, height = struct.unpack(">II", data[16:24])
+        if (width, height) != (metadata.get("width"), metadata.get("height")):
+            errors.append("manuscript Figure 1 dimensions do not match provenance")
+    except (OSError, ValueError, struct.error, KeyError, TypeError) as exc:
+        errors.append(f"invalid manuscript figure or provenance: {exc}")
+
+
 def main() -> None:
     errors: list[str] = []
     validate_python(errors)
@@ -157,12 +178,14 @@ def main() -> None:
     validate_calculators(errors)
     validate_disclosure(errors)
     validate_note_free_templates(errors)
+    validate_manuscript_figure(errors)
     if errors:
         for error in errors:
             print(f"[error] {error}", file=sys.stderr)
         raise SystemExit(1)
     print("[ok] Python and JSON syntax")
     print("[ok] 55 unique calculator tools and matching SHA-256 manifest")
+    print("[ok] original manuscript Figure 1 checksum and dimensions")
     print("[ok] no common secrets, local user paths, committed notes, or files over 50 MiB")
 
 

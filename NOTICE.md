@@ -33,6 +33,8 @@ Model weights, LoRA adapters, proprietary model outputs, and API credentials are
 
 ## Figure
 
-`assets/framework.svg` is an original, repository-specific schematic made from
-generic text and geometric shapes. It contains no third-party logos, author
-names, affiliations, or manuscript metadata.
+`assets/figure1.png` is the original Figure 1 embedded in the submitted
+manuscript supplied by the project author. It has not been redrawn or
+rescaled. `assets/figure1.source.json` records the source document checksum,
+page, image dimensions, and released PNG checksum. Existing logos and brand
+marks shown in that figure remain the property of their respective owners.

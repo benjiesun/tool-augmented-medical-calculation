@@ -1,0 +1,7 @@
+{
+  "calculator_id": "5",
+  "relevant_entities": {
+    "Systolic blood pressure": [120, "mmHg"],
+    "Diastolic blood pressure": [80, "mmHg"]
+  }
+}

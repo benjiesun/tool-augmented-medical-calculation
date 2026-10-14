@@ -1,0 +1,13 @@
+{
+  "figure": "Figure 1",
+  "source_document": "paper.pdf",
+  "source_document_sha256": "c8b91e08df511bef4fc107794fb6b24dbc0f707565bcff02dc25033d2d1406ff",
+  "source_page": 3,
+  "source_pdf_image": "Im1",
+  "image_file": "figure1.png",
+  "image_sha256": "e3980130d4cb7b42438a7a83032cf002b52150df032276143afb24246937c493",
+  "width": 3174,
+  "height": 1440,
+  "extraction": "Original embedded image, decoded to PNG with identical RGB pixels; no redraw, crop, or rescaling.",
+  "caption": "Overview of the proposed method. It is illustrated with the Cockcroft-Gault creatinine-clearance calculator. The workflow retrieves and structures calculator rules, synthesizes and validates an executable calculator tool, extracts calculator inputs from a patient note, and executes the validated tool deterministically."
+}

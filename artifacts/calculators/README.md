@@ -14,4 +14,11 @@ validator checks this manifest before a run. The artifact also completed a
 1,100-case execution test with ground-truth input entities and zero runtime
 errors.
 
-The historical work-log identifier for this set was `api_gpt-5-5_r5_s8_b1000000_260519_090713`. The submitted manuscript text instead describes up to five validation examples and four repair rounds. This discrepancy is preserved and explained in [docs/REPRODUCTION.md](../../docs/REPRODUCTION.md); it must be resolved before claiming from-scratch exact reproduction.
+The historical work-log identifier for this set was
+`api_gpt-5-5_r5_s8_b1000000_260519_090713`. Its naming convention denotes five
+total generation rounds and eight validation examples, while the paper
+describes up to five examples and four repairs. Five total rounds include an
+initial generation and at most four repairs; only the example-count difference
+requires confirmation against the selected generation records. See
+[docs/REPRODUCTION.md](../../docs/REPRODUCTION.md) before claiming exact
+from-scratch reproduction.

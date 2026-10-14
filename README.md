@@ -6,7 +6,11 @@
 
 This repository implements a tool-augmented LLM framework that separates clinical-language understanding from deterministic medical calculation. The system retrieves calculator specifications, synthesizes and validates reusable Python tools, extracts schema-constrained parameters from patient notes, and executes the frozen tools to produce auditable calculations.
 
-![Framework overview](assets/framework.svg)
+![Figure 1: overview of the proposed method](assets/figure1.png)
+
+Figure 1 from the submitted manuscript, illustrated with the Cockcroft-Gault
+creatinine-clearance calculator. This is the original embedded figure; its
+provenance and checksum are recorded in [assets/figure1.source.json](assets/figure1.source.json).
 
 ## Highlights
 
@@ -32,6 +36,12 @@ The repository retains the submitted project's answer adapter and scoring protoc
 
 Detailed aggregate tables are in [results/README.md](results/README.md).
 
+The 94.91% fixed-tool score can be rerun with the released calculators and
+downloaded benchmark. Reproducing the 86.73% end-to-end result additionally
+requires the submitted SFT adapter and training/run records, which are not
+distributed here. See [the repository audit](docs/REPOSITORY_AUDIT_zh.md) for
+remaining reproducibility requirements.
+
 ## Repository layout
 
 ```text
@@ -43,6 +53,7 @@ Detailed aggregate tables are in [results/README.md](results/README.md).
 ├── configs/                   # secret-free configuration templates
 ├── data/processed/            # note-free, licensed few-shot metadata
 ├── docs/                      # reproducibility notes
+├── examples/                  # CPU-only calculator input and expected output
 ├── results/                   # aggregate tables only
 ├── scripts/                   # download, run, and repository validation
 ├── src/toolmed_agent/         # installable Python package
@@ -101,6 +112,16 @@ Validate the repository without a GPU or API:
 python scripts/validate_artifacts.py
 python -m unittest discover -s tests -v
 ```
+
+Try one released calculator without a model, API key, or benchmark download:
+
+```bash
+python scripts/run_calculator.py --input examples/mean_arterial_pressure/input.json
+```
+
+The sample uses systolic/diastolic pressures of 120/80 mmHg and returns
+93.33333333333333 mmHg. Its input, expected output, and scope are documented in
+[examples/README.md](examples/README.md).
 
 After downloading the benchmark, reproduce the submitted 94.91% fixed-tool
 score using ground-truth input entities:

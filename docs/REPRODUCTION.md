@@ -11,6 +11,7 @@ CPU-only validation can check:
 - calculator execution on representative inputs;
 - calculator-69 evaluator regression behavior;
 - JSON/JSONL integrity;
+- the original manuscript Figure 1 checksum and dimensions;
 - absence of common secrets, personal server paths, and GitHub-prohibited large files.
 
 ## External requirements
@@ -74,16 +75,40 @@ toolmed-build-tools --help
 toolmed-build-tools-no-web --help
 ```
 
-From-scratch tool building requires a legally obtained rule corpus and the downloaded training set. Captured MDCalc text and raw tool-building prompts are intentionally not redistributed.
+From-scratch tool building requires a legally obtained rule corpus and the
+downloaded training set. Captured MDCalc text and raw tool-building prompts are
+not redistributed. The original private `build_rag_docs.py` and its input
+guides are also absent. Supply prepared rule documents explicitly:
+
+```bash
+toolmed-build-tools --base_dir . --train_csv data/processed/train_data.csv --stage1_docs_jsonl rag_docs/stage1_tool_builder.jsonl --sample_per_calc 5 --max_rounds 5
+```
+
+The local `rag_docs/stage1_tool_builder.jsonl` must contain the authorized rule
+corpus and is ignored by Git. Set `TOOL_WRITER_API_BASE`, `TOOL_WRITER_API_KEY`,
+and `TOOL_WRITER_MODEL_NAME` in the process environment; the standalone builder
+does not load `runtime.env` automatically. This command expresses the paper's
+five-example/four-repair limits, but is not a claim of exact regeneration of
+the released tools. `max_rounds` includes the initial generation: five total
+rounds permit at most four subsequent repair rounds.
 
 ### Configuration discrepancy requiring author resolution
 
-The submitted paper text describes up to five same-calculator validation examples and four repair rounds. The exact fixed tool artifact used by the reported main run retains the earlier work-log identifier `r5_s8`, indicating an eight-sample/five-round generation budget. Reusing the released tool files reproduces the artifact; regenerating from paper text may produce a different tool set.
+The submitted paper describes up to five same-calculator validation examples
+and four repair rounds. The fixed artifact retains an `r5_s8` work-log
+identifier, whose naming convention denotes five total rounds and eight
+validation examples. Five total rounds are compatible with four repairs;
+the round labels alone are not a discrepancy. The five-versus-eight example
+count still requires confirmation against the selected generation runs.
+Reusing the released files reproduces the artifact; rebuilding from paper
+settings may produce a different tool set.
 
 Before a public reproducibility claim or camera-ready release, the authors should either:
 
-1. update the manuscript to describe the actual artifact settings, or
-2. regenerate tools with the stated 5-example/4-repair configuration and rerun every affected table.
+1. confirm the validation-example count from the original generation records
+   and describe the settings actually used, or
+2. regenerate tools with the stated five-example/four-repair configuration
+   and rerun every affected table.
 
 ## Evaluation semantics
 
