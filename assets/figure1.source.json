@@ -1,7 +1,8 @@
 {
   "figure": "Figure 1",
-  "source_document": "paper.pdf",
-  "source_document_sha256": "c8b91e08df511bef4fc107794fb6b24dbc0f707565bcff02dc25033d2d1406ff",
+  "source_document": "bibm_arivx.pdf",
+  "source_document_sha256": "422991292c5b3fc629404bcb4c7c8aaeec3e0585cd5198f20acb1e7610d9b23d",
+  "source_document_pages": 9,
   "source_page": 3,
   "source_pdf_image": "Im1",
   "image_file": "figure1.png",

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "scope": "Archived generation and selection records for the released fixed calculator set",
+  "source_result_file": "result_gpt_5_5_buildtool_merged_260519_090713.jsonl",
+  "source_result_sha256": "66e627f9cedad9b2e47c01efd274e85bceeb5f8347daaaa804cdfa1d7c7630ae",
+  "source_output_file": "output_gpt_5_5_buildtool_merged_260519_090713.jsonl",
+  "source_output_sha256": "aa71435c15ee8ec532b0e486ecdbc519e4cc84bf6c0882d4367e066e54297361",
+  "configuration": {
+    "max_total_generation_rounds": 5,
+    "max_subsequent_repair_rounds": 4,
+    "validation_examples_per_calculator": 8,
+    "outer_cycles_observed": 1,
+    "same_examples_reused_across_executed_validation_rounds": true
+  },
+  "selection": {
+    "calculators": 55,
+    "all_eight_validation_examples_passed": 53,
+    "retained_best_candidate_without_all_eight_passing": 2,
+    "best_round_counts": {"1": 22, "2": 22, "3": 10, "4": 1},
+    "last_attempted_round_counts": {"1": 22, "2": 21, "3": 9, "4": 1, "5": 2},
+    "not_all_pass": [
+      {"calculator_id": "24", "best_round": 2, "best_validation_correct": 6, "validation_examples": 8},
+      {"calculator_id": "33", "best_round": 3, "best_validation_correct": 3, "validation_examples": 8}
+    ]
+  },
+  "notes": [
+    "Generation rounds count candidate-generation iterations, including the initial candidate; they are not validation sample counts or API request counts.",
+    "The cycle1 filename suffix identifies the outer cycle, not the selected inner generation round.",
+    "A frozen calculator need not have passed all training validation examples. Test accuracy remains the separately reported 1044/1100 under the submitted evaluator.",
+    "Raw generation prompts, model outputs, and validation traces are not distributed; only this aggregate is included."
+  ]
+}

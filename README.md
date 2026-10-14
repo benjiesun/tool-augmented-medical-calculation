@@ -16,7 +16,7 @@ provenance and checksum are recorded in [assets/figure1.source.json](assets/figu
 
 - Rule-grounded synthesis and execution-based repair of medical-calculator tools.
 - Calculator-specific JSON schemas and three same-calculator demonstrations for parameter extraction.
-- A validated set of 55 calculator tools used by the submitted manuscript.
+- A frozen set of 55 calculator tools used by the submitted manuscript.
 - Aggregate results, portable configuration templates, data preparation, and CPU-only validation scripts.
 - No API keys, model weights, manuscripts, raw LLM traces, or full benchmark files are committed.
 

@@ -26,6 +26,23 @@ The full model run requires:
 
 Model weights and the final extraction adapter were not present in the source material and are not fabricated here. Until the adapter, training command, exact dependency lock, hardware details, and checksums are released, this repository must not claim one-command reproduction of the 86.73% submitted result.
 
+The latest supplied manuscript, `bibm_arivx.pdf`, reports the following
+extraction-training configuration in Table I. These are paper-reported
+settings, not a reconstructed training run:
+
+| Setting | Reported value |
+|---|---|
+| Base model | Qwen3-8B |
+| Tuning | LoRA on a frozen base model |
+| LoRA rank / alpha / dropout | 16 / 32 / 0.05 |
+| Learning rate | 5e-5 |
+| Epochs | 5 |
+| Global batch size | 8 |
+| Maximum training sequence length | 8,192 |
+
+The training command, seed, final adapter, checkpoint selection, and original
+GPU/software environment still need to be provided for exact reproduction.
+
 ## Prepare
 
 ```bash
@@ -81,34 +98,38 @@ not redistributed. The original private `build_rag_docs.py` and its input
 guides are also absent. Supply prepared rule documents explicitly:
 
 ```bash
-toolmed-build-tools --base_dir . --train_csv data/processed/train_data.csv --stage1_docs_jsonl rag_docs/stage1_tool_builder.jsonl --sample_per_calc 5 --max_rounds 5
+toolmed-build-tools --base_dir . --train_csv data/processed/train_data.csv --stage1_docs_jsonl rag_docs/stage1_tool_builder.jsonl --sample_per_calc 8 --max_rounds 5
 ```
 
 The local `rag_docs/stage1_tool_builder.jsonl` must contain the authorized rule
 corpus and is ignored by Git. Set `TOOL_WRITER_API_BASE`, `TOOL_WRITER_API_KEY`,
 and `TOOL_WRITER_MODEL_NAME` in the process environment; the standalone builder
-does not load `runtime.env` automatically. This command expresses the paper's
-five-example/four-repair limits, but is not a claim of exact regeneration of
-the released tools. `max_rounds` includes the initial generation: five total
-rounds permit at most four subsequent repair rounds.
+does not load `runtime.env` automatically. This command expresses the latest
+paper's eight-example/four-repair profile, but is not a claim of exact
+regeneration of the released tools. `max_rounds` includes the initial
+generation: five total rounds permit at most four subsequent repair rounds.
 
-### Configuration discrepancy requiring author resolution
+### Confirmed generation settings and selection
 
-The submitted paper describes up to five same-calculator validation examples
-and four repair rounds. The fixed artifact retains an `r5_s8` work-log
-identifier, whose naming convention denotes five total rounds and eight
-validation examples. Five total rounds are compatible with four repairs;
-the round labels alone are not a discrepancy. The five-versus-eight example
-count still requires confirmation against the selected generation runs.
-Reusing the released files reproduces the artifact; rebuilding from paper
-settings may produce a different tool set.
+The latest supplied manuscript states eight same-calculator training examples
+and up to four subsequent validation-and-repair rounds (pages 3-4). The
+original launch script uses `MAX_ROUNDS=5` and `SAMPLE_PER_CALC=8`. Archived
+records confirm eight validation examples for each of the 55 calculators,
+the same sample set reused in each executed validation round, and no
+candidate-generation round above five. The `r5_s8` identifier therefore
+matches the latest paper. The previous five-versus-eight discrepancy was
+based on an older manuscript and is resolved.
 
-Before a public reproducibility claim or camera-ready release, the authors should either:
+See [generation_summary.json](../artifacts/calculators/gpt_5_5/generation_summary.json)
+for source checksums and aggregate selection records. Of the 55 selected
+tools, 53 passed all eight training checks. Calculators 24 and 33 retained
+their best candidates without passing every training check. All 55 were kept
+in the reported test evaluation; the tool score remains 94.91%.
 
-1. confirm the validation-example count from the original generation records
-   and describe the settings actually used, or
-2. regenerate tools with the stated five-example/four-repair configuration
-   and rerun every affected table.
+The optional on-demand builder template now uses five total rounds and eight
+validation examples. Generic standalone CLI defaults differ, so use the
+explicit arguments above for this profile. Newly generated tools may differ
+from the frozen set and must be evaluated separately.
 
 ## Evaluation semantics
 
