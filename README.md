@@ -2,15 +2,30 @@
 
 [中文说明](README_zh.md)
 
-> **Double-blind review notice:** this artifact is being prepared during an active double-blind review period. Keep the repository private and do not mirror it from a personally identifying account before the review decision. Author and archival citation information will be added after the review period.
+Yang Zhong, Ling Luo, Xuanlyu Zhu, Yanhua Wang, Yuanyuan Sun, Jian Wang, Hongfei Lin.
+
+This public research artifact follows the final supplied LaTeX source. The manuscript is not edited by this repository update. No acceptance, DOI, or arXiv publication is implied.
+
+The manuscript reports **86.73% final-answer accuracy** on MedCalc-Bench
+Verified v1.0.7. This repository provides code and reproduction instructions,
+not archived per-case predictions or complete LLM responses. Evaluation
+limitations are documented in [known issues](results/KNOWN_ISSUES.md).
 
 This repository implements a tool-augmented LLM framework that separates clinical-language understanding from deterministic medical calculation. The system retrieves calculator specifications, synthesizes and validates reusable Python tools, extracts schema-constrained parameters from patient notes, and executes the frozen tools to produce auditable calculations.
 
 ![Figure 1: overview of the proposed method](assets/figure1.png)
 
-Figure 1 from the submitted manuscript, illustrated with the Cockcroft-Gault
-creatinine-clearance calculator. This is the original embedded figure; its
+Figure 1 from the final manuscript's `figures/image1.png`, illustrated with the Cockcroft-Gault
+creatinine-clearance calculator. This is the original source image; its
 provenance and checksum are recorded in [assets/figure1.source.json](assets/figure1.source.json).
+
+![Figure 2: prompts for the three main stages](assets/figure2.png)
+
+Figure 2 from the final LaTeX source summarizes the prompt contracts. The
+three main stages share the templates in
+[src/toolmed_agent/prompts.py](src/toolmed_agent/prompts.py); actual requests
+fill in the rule evidence, schema, examples, and current note. See
+[the prompt-to-code mapping](docs/PROMPTS.md) for details.
 
 ## Highlights
 
@@ -20,41 +35,24 @@ provenance and checksum are recorded in [assets/figure1.source.json](assets/figu
 - Aggregate results, portable configuration templates, data preparation, and CPU-only validation scripts.
 - No API keys, model weights, manuscripts, raw LLM traces, or full benchmark files are committed.
 
-## Submitted results
-
-The submitted manuscript evaluates on MedCalc-Bench Verified v1.0.7 (55 calculators, 1,100 test cases).
-
-| Method | Final accuracy |
-|---|---:|
-| Qwen3-8B one-shot prompting | 62.73% |
-| Qwen3-8B SFT-only | 69.46% |
-| Tool-augmented framework, Qwen3-8B-SFT extractor | **86.73%** |
-
-The submitted run contains 954/1,100 correct final calculations and a parameter matching rate of 5,241/5,377 (97.47%). The GPT-5.5 retrieval-and-repair tool set achieves 94.91% tool-level accuracy with zero runtime errors in the reported evaluation.
-
-The repository retains the submitted project's answer adapter and scoring protocol. The post-submission calculator-69 parsing change has been withdrawn, and the submitted results remain unchanged. The project's answer adapter is distinct from the upstream benchmark's scoring function; see [Evaluation protocol](results/KNOWN_ISSUES.md).
-
-Detailed aggregate tables are in [results/README.md](results/README.md).
-
-The 94.91% fixed-tool score can be rerun with the released calculators and
-downloaded benchmark. Reproducing the 86.73% end-to-end result additionally
-requires the submitted SFT adapter and training/run records, which are not
-distributed here. See [the repository audit](docs/REPOSITORY_AUDIT_zh.md) for
-remaining reproducibility requirements.
+Reproducing the end-to-end result additionally requires the submitted SFT
+adapter, which is not distributed here. The released calculators can be
+tested independently with gold input parameters. See
+[docs/REPRODUCTION.md](docs/REPRODUCTION.md) for requirements and commands.
 
 ## Repository layout
 
 ```text
 .
 ├── artifacts/
-│   ├── calculators/gpt_5_5/   # 55 validated calculator tools
+│   ├── calculators/gpt_5_5/   # 55 frozen tools; 53 passed all training checks
 │   └── memory/                # public rule stubs; mutable memory is ignored
 ├── assets/                    # manuscript-created figures
 ├── configs/                   # secret-free configuration templates
 ├── data/processed/            # note-free, licensed few-shot metadata
 ├── docs/                      # reproducibility notes
 ├── examples/                  # CPU-only calculator input and expected output
-├── results/                   # aggregate tables only
+├── results/                   # small reported aggregates and evaluation notes
 ├── scripts/                   # download, run, and repository validation
 ├── src/toolmed_agent/         # installable Python package
 └── tests/                     # CPU-only regression tests
@@ -145,9 +143,30 @@ toolmed-run --root-dir . --env-file runtime.env --limit 1
 
 Tool generation and full experimental reproduction require the model endpoints or local checkpoints described in [docs/REPRODUCTION.md](docs/REPRODUCTION.md).
 
+To audit an existing complete raw prediction archive without rerunning an LLM:
+
+```bash
+python scripts/rescore_extractions.py --predictions output/private_run.steps.jsonl --output output/parameter_audit.json
+```
+
+The command requires all 1,100 raw extraction objects and the pinned test CSV.
+Stored match counts alone are insufficient. It preserves archived final
+judgments and produces corrected parameter/category/error-group aggregates.
+
 ## Citation
 
-Citation metadata is intentionally withheld during double-blind review. After the review period, this section will be replaced with the final bibliographic record and `CITATION.cff`.
+The seven-author order follows the final `main.tex`, not the older six-author
+PDF bundled alongside it. See [CITATION.cff](CITATION.cff).
+
+```bibtex
+@unpublished{zhong2026toolaugmented,
+  title = {Tool-Augmented Large Language Models for Reliable Medical Calculation from Patient Notes},
+  author = {Zhong, Yang and Luo, Ling and Zhu, Xuanlyu and Wang, Yanhua and Sun, Yuanyuan and Wang, Jian and Lin, Hongfei},
+  year = {2026},
+  note = {Manuscript; associated research code},
+  url = {https://github.com/benjiesun/tool-augmented-medical-calculation}
+}
+```
 
 ## License and intended use
 

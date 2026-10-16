@@ -1,14 +1,14 @@
 {
   "figure": "Figure 1",
-  "source_document": "bibm_arivx.pdf",
-  "source_document_sha256": "422991292c5b3fc629404bcb4c7c8aaeec3e0585cd5198f20acb1e7610d9b23d",
-  "source_document_pages": 9,
-  "source_page": 3,
-  "source_pdf_image": "Im1",
+  "source_document": "bibm_arivx.zip",
+  "source_document_sha256": "18471c882284f94a3243af30443907622ae88dfbf75b383b37fd164bc20fb827",
+  "source_latex": "main.tex",
+  "source_latex_sha256": "440b661fe88aad388a439cd12c1dfc3f5a7f1a05f7ef98242f0469bf6acb7f46",
+  "source_image": "figures/image1.png",
   "image_file": "figure1.png",
-  "image_sha256": "e3980130d4cb7b42438a7a83032cf002b52150df032276143afb24246937c493",
+  "image_sha256": "0b02528ac7dab659d24849165587ded84861b5abefbaee7613d7a56aa7ba5b99",
   "width": 3174,
   "height": 1440,
-  "extraction": "Original embedded image, decoded to PNG with identical RGB pixels; no redraw, crop, or rescaling.",
+  "extraction": "Byte-for-byte copy of the final LaTeX project's original PNG; no redraw, crop, or rescaling. RGB pixels are also identical to the previously released embedded image.",
   "caption": "Overview of the proposed method. It is illustrated with the Cockcroft-Gault creatinine-clearance calculator. The workflow retrieves and structures calculator rules, synthesizes and validates an executable calculator tool, extracts calculator inputs from a patient note, and executes the validated tool deterministically."
 }

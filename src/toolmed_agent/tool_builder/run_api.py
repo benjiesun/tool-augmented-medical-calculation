@@ -505,7 +505,7 @@ def main() -> None:
 
     parser.add_argument("--token_budget", type=int, default=1_000_000)
     parser.add_argument("--sample_per_calc", type=int, default=8)
-    parser.add_argument("--max_rounds", type=int, default=10)
+    parser.add_argument("--max_rounds", type=int, default=5)
     parser.add_argument("--rag_top_k", type=int, default=3)
     parser.add_argument("--seed", type=int, default=20260417)
     parser.add_argument("--max_calculators", type=int, default=0)

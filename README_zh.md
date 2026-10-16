@@ -2,14 +2,26 @@
 
 [English](README.md)
 
-> **双盲审稿提醒：**本代码正在双盲审稿期间整理。审稿结果公布前，请保持仓库为私有状态，不要从可识别作者身份的个人账号公开或镜像。作者与正式引用信息将在审稿期结束后补充。
+作者顺序：Yang Zhong、Ling Luo、Xuanlyu Zhu、Yanhua Wang、Yuanyuan Sun、Jian Wang、Hongfei Lin。
+
+本公开科研仓库以最终 LaTeX 源码为论文依据；本次不修改论文。当前引用不表示论文已录用、已取得 DOI 或已在 arXiv 发布。
+
+论文在 MedCalc-Bench Verified v1.0.7 上报告的最终答案准确率为 **86.73%**。
+本仓库用于下载和复现，不发布旧运行的逐例抽取记录或大模型完整回答。
+评测实现的限制和必要说明集中在[已知问题](results/KNOWN_ISSUES.md)。
 
 本仓库实现一个工具增强的大语言模型框架，将临床文本理解与确定性医学计算解耦：系统检索并结构化计算器规则，生成和验证可复用 Python 工具，按计算器 schema 从患者记录抽取参数，最后调用冻结工具完成可审计计算。
 
 ![论文图一：方法框架](assets/figure1.png)
 
-上图直接采用投稿论文第 3 页的图一，以 Cockcroft-Gault 肌酐清除率计算器说明完整流程。
-图片未重绘、裁剪或缩放，来源及校验值见 [figure1.source.json](assets/figure1.source.json)。
+上图直接复制最终 LaTeX 工程的 `figures/image1.png`，以 Cockcroft-Gault 肌酐清除率计算器说明完整流程。
+图片未重绘、裁剪或缩放，文件与最终源码原图逐字节一致，来源及校验值见 [figure1.source.json](assets/figure1.source.json)。
+
+![论文图二：三个主要阶段的提示词](assets/figure2.png)
+
+图二来自最终 LaTeX 源码的实际排版。代码已按图二统一三阶段的提示词约束，
+共享模板见 [prompts.py](src/toolmed_agent/prompts.py)，[对应关系](docs/PROMPTS.md)说明实际调用入口。
+图中是概括，运行时会填入规则证据、schema、三个同类示例和当前病例，不包含历史模型回答。
 
 ## 核心内容
 
@@ -19,23 +31,8 @@
 - 聚合结果、无密钥配置模板、数据下载脚本和 CPU 回归测试。
 - 仓库不包含 API 密钥、模型权重、投稿论文、完整 LLM 轨迹或完整基准数据。
 
-## 投稿结果口径
-
-投稿论文在 MedCalc-Bench Verified v1.0.7 的 1,100 个测试病例上报告：
-
-| 方法 | 最终准确率 |
-|---|---:|
-| Qwen3-8B one-shot prompting | 62.73% |
-| Qwen3-8B SFT-only | 69.46% |
-| 工具增强框架 + Qwen3-8B-SFT 抽取器 | **86.73%** |
-
-主运行正确 954/1,100 例，参数匹配率为 5,241/5,377（97.47%）；GPT-5.5 检索与修复工具的工具级准确率为 94.91%。
-
-本仓库保留投稿时的答案解析与评分口径，已撤回投稿后对 calculator 69 的解析修改，论文原始结果保持不变。项目的前置答案解析并非官方评分函数的原样复制；两者的区别见 [评测口径说明](results/KNOWN_ISSUES.md)。
-
-发布的计算工具与下载后的基准可复现工具级 94.91%。完整复现 86.73% 还需要投稿时的
-SFT 权重和训练、运行记录，这些材料尚未发布。对照导师论文代码仓库的审计结果见
-[仓库审计报告](docs/REPOSITORY_AUDIT_zh.md)。
+完整复现还需要论文实验所用的最终 SFT adapter；当前未随仓库提供。
+冻结计算器可独立测试，具体环境、数据和运行命令见[复现指南](docs/REPRODUCTION.md)。
 
 ## 快速开始
 
@@ -78,8 +75,18 @@ LIMIT=1 bash scripts/run_pipeline.sh
 
 完整环境、模型和复现限制见 [docs/REPRODUCTION.md](docs/REPRODUCTION.md)。数据许可与第三方归属见 [NOTICE.md](NOTICE.md)。
 
+已拥有完整逐例原始抽取时，可不调用模型而重新统计 PMR：
+
+```bash
+python scripts/rescore_extractions.py --predictions output/private_run.steps.jsonl --output output/parameter_audit.json
+```
+
+需包含全部 1,100 条原始抽取，并使用固定版本测试集；只有旧匹配计数不能重算。
+最终答案的旧判定会原样保留，重新计算参数匹配、类别汇总及错误分组。
+
 ## 引用与许可
 
-双盲审稿期间暂不加入作者和 BibTeX；审稿结束后将补充正式引用及 `CITATION.cff`。
+作者采用最终源码中的七人顺序，包含 Xuanlyu Zhu，不再沿用旧 PDF 的六人名单。
+引用见 [CITATION.cff](CITATION.cff) 和 [英文 README](README.md#citation)；未虚构发表信息。
 
 大部分代码采用 [Apache License 2.0](LICENSE)；`evaluation.py` 的基准评分语义及数据集衍生文件继续受 CC BY-SA 4.0 约束，具体边界见 [NOTICE.md](NOTICE.md)。本项目仅用于科研，不是医疗器械，不得用于诊断、治疗或真实患者决策；运行任何生成代码前都应人工审查并在沙箱中执行。

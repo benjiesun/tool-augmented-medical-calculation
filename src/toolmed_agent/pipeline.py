@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import random
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -9,6 +10,7 @@ from .evaluation import judge_case, summarize
 from .extraction import ParameterExtractor
 from .memory import MemoryStore
 from .normalization import UnitNormalizer
+from .prompts import PROMPT_CONTRACT_VERSION, build_rule_curation_messages
 from .tool_generation import FormulaWriter
 from .tool_registry import CalculationToolRegistry
 from .utils import (
@@ -175,14 +177,17 @@ class CentralHost:
             ensure_dir(str(p))
 
         self.dataset_rows_all = load_csv_rows(str(self.dataset_csv)) if self.dataset_csv.exists() else []
+        self.tool_train_csv = _path_env(
+            "TOOL_TRAIN_CSV", self.root_dir / "data/processed/train_data.csv", self.root_dir,
+        )
+        if not self.local_tools_only and self.tool_train_csv == self.dataset_csv:
+            raise ValueError("Tool construction training CSV must differ from the evaluated dataset CSV")
+        self.tool_validation_seed = safe_int(_env("TOOL_VALIDATION_SEED", "20260415")) or 20260415
         self.rows_by_calc: Dict[str, List[Dict[str, Any]]] = {}
-        self.row_by_number: Dict[str, Dict[str, Any]] = {}
-        for row in self.dataset_rows_all:
+        training_rows = load_csv_rows(str(self.tool_train_csv)) if self.tool_train_csv.exists() else []
+        for row in training_rows:
             cid = _norm_cid(row.get("Calculator ID", ""))
             self.rows_by_calc.setdefault(cid, []).append(row)
-            rn = safe_str(row.get("Row Number", "")).strip()
-            if rn:
-                self.row_by_number[rn] = row
 
         api_key = _env("API_KEY", "")
         self.central_llm = _build_llm(
@@ -276,7 +281,7 @@ class CentralHost:
         )
         self.formula_writer = FormulaWriter(
             self.tool_writer_llm,
-            max_rounds=safe_int(_env("TOOL_WRITER_MAX_ROUNDS", "4")) or 4,
+            max_rounds=safe_int(_env("TOOL_WRITER_MAX_ROUNDS", "5")) or 5,
             max_new_tokens=safe_int(_env("TOOL_WRITER_MAX_NEW_TOKENS", _env("CENTRAL_MAX_NEW_TOKENS", "1800")))
             or 1800,
             tool_exec_timeout_sec=safe_int(_env("TOOL_EXEC_TIMEOUT_SEC", "3")) or 3,
@@ -345,25 +350,18 @@ class CentralHost:
         self,
         calculator_id: Any,
         current_row_number: Any,
-        max_rows: int = 5,
+        max_rows: int = 8,
     ) -> List[Dict[str, Any]]:
         cid = _norm_cid(calculator_id)
-        rn = safe_str(current_row_number).strip()
         pool = list(self.rows_by_calc.get(cid, []))
         if not pool:
-            return []
-
-        out: List[Dict[str, Any]] = []
-        cur = self.row_by_number.get(rn)
-        if cur and _norm_cid(cur.get("Calculator ID", "")) == cid:
-            out.append(cur)
-        for row in pool:
-            if len(out) >= max(1, int(max_rows)):
-                break
-            if safe_str(row.get("Row Number", "")).strip() == rn:
-                continue
-            out.append(row)
-        return out[: max(1, int(max_rows))]
+            raise ValueError("Tool validation requires same-calculator training data; test labels must not be used")
+        count = max(1, int(max_rows))
+        if len(pool) < count:
+            raise ValueError(f"Calculator {cid} has fewer than {count} training validation examples")
+        cid_seed = safe_int(cid) or sum(map(ord, cid))
+        rng = random.Random(self.tool_validation_seed + cid_seed)
+        return rng.sample(pool, k=count)
 
     @staticmethod
     def _first_mdcalc_url(source_hits: List[Dict[str, Any]]) -> str:
@@ -385,31 +383,10 @@ class CentralHost:
         if not self.rule_retriever_llm.available:
             return {}
 
-        system = (
-            "You are a medical calculator rule curator. "
-            "Read web evidence and output STRICT JSON only."
+        messages = build_rule_curation_messages(
+            _norm_cid(calculator_id), safe_str(calculator_name), safe_str(question),
+            safe_str(web_evidence_text)[:12000], source_hits[:8],
         )
-        user = (
-            f"Calculator ID: {_norm_cid(calculator_id)}\n"
-            f"Calculator Name: {safe_str(calculator_name)}\n"
-            f"Question: {safe_str(question)}\n\n"
-            "Web evidence snippets:\n"
-            f"{safe_str(web_evidence_text)[:12000]}\n\n"
-            "Web source hits (JSON):\n"
-            f"{json.dumps(source_hits[:8], ensure_ascii=False)}\n\n"
-            "Return JSON with fields:\n"
-            "{\n"
-            '  "mdcalc_title": "string",\n'
-            '  "mdcalc_url": "string",\n'
-            '  "formula": "string",\n'
-            '  "inputs": "string",\n'
-            '  "instructions": "string",\n'
-            '  "evidence_text": "string"\n'
-            "}\n"
-            "Do not invent facts absent from evidence."
-        )
-
-        messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         answer = ""
         error = ""
         try:
@@ -453,7 +430,7 @@ class CentralHost:
         question = row.get("Question", "")
 
         existing = self.memory.get_rule(cid, calc_name, question)
-        if existing:
+        if existing and (self.local_tools_only or existing.get("source") != "public_artifact_stub"):
             trace["rule_source"] = existing.get("source", "memory")
             trace["rule_status"] = "hit"
             return existing
@@ -472,19 +449,24 @@ class CentralHost:
             source_hits=source_hits,
             trace=trace,
         )
-        mdcalc_url = safe_str(organized.get("mdcalc_url", "")).strip() or self._first_mdcalc_url(source_hits)
-        evidence_text = safe_str(organized.get("evidence_text", "")).strip() or safe_str(web.get("evidence_text", ""))
+        rule = organized.get("rule", organized)
+        if not isinstance(rule, dict):
+            rule = {}
+        mdcalc_url = safe_str(rule.get("URL", rule.get("mdcalc_url", ""))).strip() or self._first_mdcalc_url(source_hits)
+        evidence_text = safe_str(rule.get("evidence_text", "")).strip() or safe_str(web.get("evidence_text", ""))
         saved = self.memory.save_web_rule(
             calculator_id=cid,
             calculator_name=safe_str(calc_name),
             question=safe_str(question),
             evidence_text=evidence_text,
             source_hits=source_hits,
-            mdcalc_title=safe_str(organized.get("mdcalc_title", "")).strip() or safe_str(calc_name),
+            mdcalc_title=safe_str(rule.get("name", rule.get("mdcalc_title", ""))).strip() or safe_str(calc_name),
             mdcalc_url=mdcalc_url,
-            formula=safe_str(organized.get("formula", "")).strip(),
-            inputs=safe_str(organized.get("inputs", "")).strip(),
-            instructions=safe_str(organized.get("instructions", "")).strip(),
+            formula=safe_str(rule.get("formula", "")).strip(),
+            inputs=safe_str(rule.get("inputs", "")).strip(),
+            instructions=safe_str(rule.get("instructions", "")).strip(),
+            rule_specification=rule,
+            schema=organized.get("schema") if isinstance(organized.get("schema"), dict) else {},
             source="web_search_codex" if organized else "web_search_raw",
             web_fetch_status="ok" if source_hits else "empty",
         )
@@ -563,7 +545,7 @@ class CentralHost:
         eval_rows = self._sample_eval_rows_for_tool_build(
             calculator_id=cid,
             current_row_number=row.get("Row Number", ""),
-            max_rows=safe_int(_env("TOOL_WRITER_SAMPLE_PER_CALC", "5")) or 5,
+            max_rows=safe_int(_env("TOOL_WRITER_SAMPLE_PER_CALC", "8")) or 8,
         )
         generated = self.formula_writer.build_tool(
             calculator_id=cid,
@@ -1046,6 +1028,7 @@ class CentralHost:
                 "extract_llm_shared_with_central": bool(self.extract_llm_shared_with_central),
                 "judge_extraction_source": self.judge_extraction_source,
                 "legacy_evaluator": True,
+                "prompt_contract_version": PROMPT_CONTRACT_VERSION,
                 "tool_input_policy": self.tool_input_policy,
                 "enable_central_final_answer": bool(self.enable_central_final_answer),
                 "require_core_llms_available": bool(self.require_core_llms_available),

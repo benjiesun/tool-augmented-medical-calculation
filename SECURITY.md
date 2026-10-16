@@ -26,4 +26,7 @@ The 55 files under `artifacts/calculators/gpt_5_5/` are the reviewed fixed artif
 
 ## Reporting
 
-Do not disclose a suspected vulnerability in a public issue while the repository is private or under double-blind review. Contact the repository owner privately; a public security contact will be added after deanonymization.
+The repository is public. Do not post credentials, patient information, or
+exploit details in a public issue. Contact the repository owner privately;
+use GitHub private vulnerability reporting if it is available. This document
+does not imply that private reporting has been enabled.

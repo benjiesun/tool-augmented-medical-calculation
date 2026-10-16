@@ -1,0 +1,14 @@
+{
+  "figure": "Figure 2",
+  "source_document": "bibm_arivx.zip",
+  "source_document_sha256": "18471c882284f94a3243af30443907622ae88dfbf75b383b37fd164bc20fb827",
+  "source_latex": "main.tex",
+  "source_latex_sha256": "440b661fe88aad388a439cd12c1dfc3f5a7f1a05f7ef98242f0469bf6acb7f46",
+  "source_page": 4,
+  "image_file": "figure2.png",
+  "image_sha256": "594fd03b2b652fd27e9c8b848f4580ac71f3f9714cb02f057faf896347472ece",
+  "width": 1460,
+  "height": 890,
+  "extraction": "Rendered from the unmodified final main.tex, not from the stale bundled PDF or unused figures/image2.png. Poppler pdftoppm at 200 dpi, page 4, crop x=120 y=120 width=1460 height=890 pixels. Includes the original caption; no redraw.",
+  "caption": "Condensed prompts used for calculator rule curation, executable tool synthesis, and schema-constrained parameter extraction."
+}

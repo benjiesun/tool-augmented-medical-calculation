@@ -9,8 +9,8 @@ Apache License 2.0.
 MedCalc-Bench-Verified v1.0.7
 (`evaluation/evaluate.py`). That file is marked and distributed under
 CC BY-SA 4.0, with modifications for safe parsing, extraction metrics,
-equivalent cross-platform date handling, and the submitted project's separate
-answer adapter. The post-submission calculator-69 normalization has been
+equivalent cross-platform date handling, numeric-safe parameter matching,
+and the submitted project's separate answer adapter. The post-submission calculator-69 normalization has been
 withdrawn; see `results/KNOWN_ISSUES.md`.
 
 ## MedCalc-Bench Verified
@@ -31,10 +31,14 @@ Those dataset-derived files are not relicensed under Apache-2.0. Redistribution 
 
 Model weights, LoRA adapters, proprietary model outputs, and API credentials are not distributed. Qwen, GLM, Llama, vLLM, and any API provider retain their respective licenses and terms.
 
-## Figure
+## Figures
 
-`assets/figure1.png` is the original Figure 1 embedded in the submitted
-manuscript supplied by the project author. It has not been redrawn or
-rescaled. `assets/figure1.source.json` records the source document checksum,
-page, image dimensions, and released PNG checksum. Existing logos and brand
+`assets/figure1.png` is a byte-for-byte copy of Figure 1 in the final LaTeX
+project supplied by the project author. It has not been redrawn or
+rescaled. `assets/figure1.source.json` records the source archive and LaTeX
+checksums, image path, dimensions, and released PNG checksum. Existing logos and brand
 marks shown in that figure remain the property of their respective owners.
+
+`assets/figure2.png` is a rendered extraction of Figure 2 and its caption
+from the unmodified final LaTeX source, not a redrawn prompt diagram.
+`assets/figure2.source.json` records its source hashes and rendering region.

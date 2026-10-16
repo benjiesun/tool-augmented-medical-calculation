@@ -11,6 +11,7 @@ class MemoryStore:
         self.memory_dir.mkdir(parents=True, exist_ok=True)
 
         self.static_rules_path = self.memory_dir / "mdcalc_rules_v1.jsonl"
+        self.web_rules_path = self.memory_dir / "web_rules.jsonl"
         self.missing_params_path = self.memory_dir / "missing_params_memory.jsonl"
         self.case_memory_path = self.memory_dir / "case_memory.jsonl"
         self.tool_specs_path = self.memory_dir / "tool_specs.jsonl"
@@ -21,10 +22,11 @@ class MemoryStore:
             self.case_memory_path,
             self.tool_specs_path,
             self.tool_build_feedback_path,
+            self.web_rules_path,
         ):
             path.touch(exist_ok=True)
 
-        self._static_rules = load_jsonl(str(self.static_rules_path))
+        self.refresh()
 
     @staticmethod
     def _norm_cid(calculator_id: Any) -> str:
@@ -35,7 +37,8 @@ class MemoryStore:
             return s
 
     def refresh(self) -> None:
-        self._static_rules = load_jsonl(str(self.static_rules_path))
+        self._static_rules = (load_jsonl(str(self.static_rules_path))
+                              + load_jsonl(str(self.web_rules_path)))
 
     def _exact_match_rule(self, calculator_id: str) -> Optional[Dict[str, Any]]:
         cid = self._norm_cid(calculator_id)
@@ -67,6 +70,8 @@ class MemoryStore:
         formula: str = "",
         inputs: str = "",
         instructions: str = "",
+        rule_specification: Optional[Dict[str, Any]] = None,
+        schema: Optional[Dict[str, Any]] = None,
         source: str = "web_search_codex",
         web_fetch_status: str = "",
     ) -> Dict[str, Any]:
@@ -81,6 +86,8 @@ class MemoryStore:
             "formula": safe_str(formula).strip(),
             "inputs": safe_str(inputs).strip(),
             "instructions": safe_str(instructions).strip(),
+            "rule_specification": rule_specification or {},
+            "schema": schema or {},
             "evidence_text": safe_str(evidence_text).strip(),
             "web_excerpt": json.dumps(source_hits, ensure_ascii=False)[:3000],
             "web_fetch_status": safe_str(web_fetch_status).strip() or ("ok" if source_hits else "empty"),
@@ -88,7 +95,7 @@ class MemoryStore:
             "built_at": built_at,
             "query": safe_str(question).strip(),
         }
-        append_jsonl(str(self.static_rules_path), [row])
+        append_jsonl(str(self.web_rules_path), [row])
         self._static_rules.append(row)
         return row
 

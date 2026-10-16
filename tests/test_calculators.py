@@ -75,6 +75,28 @@ class CalculatorArtifactTests(unittest.TestCase):
         self.assertEqual(judged["computed_answer"], "N/A")
         self.assertFalse(judged["final_correct"])
 
+    def test_case_c_uses_pinned_gold_not_manuscript_typo(self):
+        temp_dir, registry = self._registry_with_tools(24)
+        self.addCleanup(temp_dir.cleanup)
+        entities = {
+            "input steroid": ["Hydrocortisone PO", 162.935, "mg"],
+            "target steroid": "Dexamethasone PO",
+        }
+        execution = registry.calculate(24, entities)
+        self.assertEqual(execution.error, "")
+        # Freeze the released artifact, including its documented substring bug.
+        self.assertAlmostEqual(execution.result, 4.88805)
+        self.assertAlmostEqual(162.935 * 0.75 / 20, 6.1100625)
+        row = {
+            "Calculator ID": "24", "Relevant Entities": entities,
+            "Ground Truth Answer": "6.11006",
+            "Lower Limit": "5.80456", "Upper Limit": "6.41556",
+        }
+        self.assertFalse(judge_case(row, entities, execution.result)["final_correct"])
+        self.assertTrue(judge_case(row, entities, 6.11006)["final_correct"])
+        # The printed label is wrong, but still inside the benchmark tolerance.
+        self.assertTrue(judge_case(row, entities, 6.029)["final_correct"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,7 @@
 from typing import Any, Dict, List
 
+from ..prompts import build_tool_synthesis_messages, calculator_schema
+
 
 def _join_context(snippets: List[Dict[str, Any]], max_chars: int = 4000) -> str:
     parts: List[str] = []
@@ -40,51 +42,14 @@ def stage1_build_tool_prompt(
     output_type: str = "",
     known_keys: List[str] = None,
     train_examples: List[Dict[str, Any]] = None,
+    schema: Dict[str, Any] = None,
 ) -> List[Dict[str, str]]:
     ctx = _join_context(rag_snippets)
-    output_hint = output_type or "unknown"
-    keys_txt = ", ".join((known_keys or [])[:30]) or "(none)"
-    train_txt = _render_train_examples(train_examples or [])
-    system = (
-        "You are an expert medical calculator tool builder. "
-        "Output STRICT JSON only, no markdown, no explanation, no <think>."
+    return build_tool_synthesis_messages(
+        calculator_id, calculator_name, output_type, ctx,
+        schema if schema is not None else calculator_schema(calculator_id),
+        train_examples or [],
     )
-    user = (
-        f"Calculator ID: {calculator_id}\n"
-        f"Calculator Name: {calculator_name}\n\n"
-        f"Expected benchmark output type: {output_hint}\n"
-        f"Observed training key names: {keys_txt}\n\n"
-        "Training examples (for output shape and scale; train-set only):\n"
-        f"{train_txt}\n\n"
-        "RAG references:\n"
-        f"{ctx or '(none)'}\n\n"
-        "Write robust Python code with function:\n"
-        "def calc(relevant):\n"
-        "Requirements:\n"
-        "1) relevant is a dict; values may be scalar OR [value, unit] OR tuple OR dict.\n"
-        "2) include parsing helpers to safely read number/text/boolean.\n"
-        "3) if required inputs are missing, return 'N/A'.\n"
-        "4) deterministic, concise, runnable code.\n"
-        "5) include explicit final return in calc.\n"
-        "6) no import statements.\n\n"
-        "7) For key lookup, support case-insensitive and alias keys; "
-        "do not assume exact capitalization/punctuation.\n"
-        "8) If output type is numeric (decimal/integer), return numeric scalar only, "
-        "not labels/sentences.\n"
-        "9) Do not use unbounded loops (forbidden: while True without hard stop).\n"
-        "10) tool_code must be plain Python source, no markdown fences.\n\n"
-        "11) Never use import / from-import.\n"
-        "12) Never call .lower() on unknown object; cast via str(value).lower().\n"
-        "13) Do not use variable name `next`; avoid shadowing builtins.\n"
-        "14) Do not return dict/list/tuple as final answer unless explicitly required by output type.\n\n"
-        "Return exactly this JSON schema:\n"
-        "{\n"
-        '  "required_entities": ["key1", "key2"],\n'
-        '  "tool_code": "def calc(relevant):\\n    ..."\n'
-        "}\n"
-        "/no_think"
-    )
-    return [{"role": "system", "content": system}, {"role": "user", "content": user}]
 
 
 def stage1_repair_tool_prompt(

@@ -1,10 +1,12 @@
 import ast
+import json
 import math
 import re
 import signal
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
+from .prompts import build_tool_synthesis_messages, calculator_schema
 from .utils import LLMRouter, extract_first_json_object, parse_entities, safe_float, safe_str
 
 
@@ -389,48 +391,12 @@ def _stage1_build_tool_prompt(
     output_type: str,
     known_keys: List[str],
     train_examples: List[Dict[str, Any]],
+    schema: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, str]]:
-    keys_txt = ", ".join((known_keys or [])[:30]) or "(none)"
-    ex_parts: List[str] = []
-    for i, x in enumerate(train_examples[:2], start=1):
-        ex_parts.append(
-            f"[Example {i}] relevant={x.get('relevant_entities_json', {})} "
-            f"gt_answer={x.get('ground_truth_answer', '')} "
-            f"range=[{x.get('lower_limit', '')},{x.get('upper_limit', '')}]"
-        )
-    ex_text = "\n".join(ex_parts) if ex_parts else "(none)"
-
-    system = (
-        "You are an expert medical calculator tool builder. "
-        "Output STRICT JSON only, no markdown, no explanation, no <think>."
+    return build_tool_synthesis_messages(
+        calculator_id, calculator_name, output_type, context_text,
+        schema if schema is not None else calculator_schema(calculator_id), train_examples,
     )
-    user = (
-        f"Calculator ID: {calculator_id}\n"
-        f"Calculator Name: {calculator_name}\n\n"
-        f"Expected benchmark output type: {output_type or 'unknown'}\n"
-        f"Observed training key names: {keys_txt}\n\n"
-        "Training examples (for output shape and scale):\n"
-        f"{ex_text}\n\n"
-        "RAG references:\n"
-        f"{context_text or '(none)'}\n\n"
-        "Write robust Python code with function:\n"
-        "def calc(relevant):\n"
-        "Requirements:\n"
-        "1) relevant is a dict; values may be scalar OR [value, unit] OR tuple OR dict.\n"
-        "2) include parsing helpers to safely read number/text/boolean.\n"
-        "3) if required inputs are missing, return 'N/A'.\n"
-        "4) deterministic, concise, runnable code.\n"
-        "5) include explicit final return in calc.\n"
-        "6) no import statements.\n"
-        "7) support alias/case-insensitive key lookup where needed.\n"
-        "8) if output type is numeric, return numeric scalar only.\n\n"
-        "Return exactly this JSON schema:\n"
-        "{\n"
-        '  "required_entities": ["key1", "key2"],\n'
-        '  "tool_code": "def calc(relevant):\\n    ..."\n'
-        "}"
-    )
-    return [{"role": "system", "content": system}, {"role": "user", "content": user}]
 
 
 def _build_followup_user_message(
@@ -466,7 +432,7 @@ class FormulaWriter:
     def __init__(
         self,
         llm: LLMRouter,
-        max_rounds: int = 4,
+        max_rounds: int = 5,
         max_new_tokens: int = 1800,
         tool_exec_timeout_sec: int = 3,
     ):
@@ -508,7 +474,13 @@ class FormulaWriter:
         sample_eval_rows: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
         cid = safe_str(calculator_id).strip()
-        rule_text = safe_str(rule_doc.get("evidence_text", "") or rule_doc.get("text", ""))[:9000]
+        rule_text = json.dumps(
+            rule_doc.get("rule_specification") or {
+                key: rule_doc[key] for key in (
+                    "formula", "inputs", "instructions", "evidence_text", "text",
+                ) if key in rule_doc
+            }, ensure_ascii=False,
+        )[:9000]
         context_text = _join_context_snippets(rule_text=rule_text, case_examples=case_examples)
         output_type, known_keys, train_examples = _build_calc_prompt_profile(sample_eval_rows)
 
@@ -519,6 +491,7 @@ class FormulaWriter:
             output_type=output_type,
             known_keys=known_keys,
             train_examples=train_examples,
+            schema=rule_doc.get("schema") or calculator_schema(cid),
         )
 
         if not self.llm.available:

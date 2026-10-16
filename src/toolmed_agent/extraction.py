@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
+from .prompts import build_extraction_prompt
 from .utils import LLMRouter, extract_first_json_object, safe_str
 
 
@@ -311,32 +312,12 @@ class ParameterExtractor:
     ) -> str:
         fields = calc.get("schema", {}).get("required_fields", []) or required_entities
         fields = [safe_str(x).strip() for x in fields if safe_str(x).strip()]
-        field_text = ", ".join(fields)
         fewshot = self._format_fewshot(calc, fields)
         output_schema = _output_schema_for_calc(calc, fields)
-        return "\n\n".join(
-            [
-                "You are extracting parameters for a medical calculator.",
-                "Return only one valid JSON object. Do not include markdown, explanation, or extra keys.",
-                "Use exactly the required parameter names. Return measured values as [value, unit] arrays. If a source unit is one of the schema allowed units, preserve that source unit exactly. If the schema allows only one unit, use that canonical output unit.",
-                "If a required field is not explicitly supported by the note, use null; for absent boolean criteria, use false.",
-                "For a required categorical field, an explicit negative finding is supported evidence: output its negative enum value rather than null (for example, no encephalopathy -> No Encephalopathy; no ascites -> absent).",
-                "Any field whose schema does not allow null must be populated. For Mean arterial pressure, derive (Systolic Blood Pressure + 2 * Diastolic Blood Pressure) / 3 when the note supplies both blood pressures.",
-                "Calculator metadata:",
-                f"Calculator ID: {self._norm_cid(calculator_id)}",
-                f"Calculator: {safe_str(calc.get('calculator_name', calculator_name))}",
-                f"Required parameters: {field_text}",
-                "JSON schema for the required output:",
-                json.dumps(output_schema, ensure_ascii=False, indent=2),
-                "Field specs:",
-                _format_field_specs(calc, fields),
-                "Few-shot examples:",
-                fewshot,
-                "Now extract the required parameters for this case.",
-                f"Question: {safe_str(question)}",
-                f"Patient Note: {_trim(patient_note, self.patient_note_chars)}",
-                "Output JSON:",
-            ]
+        return build_extraction_prompt(
+            self._norm_cid(calculator_id), safe_str(calc.get("calculator_name", calculator_name)),
+            safe_str(question), _trim(patient_note, self.patient_note_chars), fields,
+            output_schema, _format_field_specs(calc, fields), fewshot,
         )
 
     def _fallback_extract(self, note: str, required_entities: List[str]) -> Dict[str, Any]:
@@ -365,40 +346,13 @@ class ParameterExtractor:
             if schema_fields:
                 required_entities = schema_fields
 
-        examples_txt = []
-        for i, ex in enumerate(case_examples[:2], start=1):
-            examples_txt.append(
-                f"[Example {i}] question={ex.get('question','')} output={ex.get('relevant_entities',{})}"
-            )
-        examples_text = "\n".join(examples_txt) if examples_txt else "(none)"
-
-        messages = [
-            {
-                "role": "system",
-                "content": (
-                    "You extract calculator parameters from medical notes. "
-                    "Return strict JSON only."
-                ),
-            },
-            {
-                "role": "user",
-                "content": (
-                    f"Calculator ID: {calculator_id}\n"
-                    f"Calculator Name: {calculator_name}\n"
-                    f"Question: {question}\n\n"
-                    f"Required keys: {required_entities}\n"
-                    f"Missing-keys memory: {missing_hint or '(none)'}\n\n"
-                    "Rule references:\n"
-                    f"{safe_str(rule_text)[:6000]}\n\n"
-                    "Few-shot cases:\n"
-                    f"{examples_text}\n\n"
-                    "Patient note:\n"
-                    f"{patient_note}\n\n"
-                    "Return JSON only:"
-                    '{"relevant_entities": {"key": value or [value, "unit"]}}'
-                ),
-            },
-        ]
+        generic_calc = {
+            "schema": {"required_fields": required_entities},
+            "few_shot": {"examples": case_examples[:3]},
+        }
+        messages = [{"role": "user", "content": self._build_medbench_prompt(
+            calculator_id, calculator_name, question, patient_note, required_entities, generic_calc,
+        )}]
         llm_io: List[Dict[str, Any]] = []
 
         def record_llm_io(
@@ -435,7 +389,7 @@ class ParameterExtractor:
 
         answer = ""
         error = ""
-        mode = "legacy_prompt"
+        mode = "figure2_generic"
         strict_schema = False
         strict_calc: Dict[str, Any] = {}
         strict_prompt = ""
@@ -483,7 +437,7 @@ class ParameterExtractor:
             except Exception as e:
                 legacy_error = f"llm_error:{type(e).__name__}:{e}"
                 error = legacy_error
-            mode = "legacy_prompt"
+            mode = "figure2_generic"
             record_llm_io(mode, messages, answer, legacy_error)
 
         parsed = extract_first_json_object(answer)

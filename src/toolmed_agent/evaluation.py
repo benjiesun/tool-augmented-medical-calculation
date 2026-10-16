@@ -14,6 +14,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 
+PARAMETER_MATCHER_VERSION = "numeric-safe-v2"
+FINAL_ANSWER_PROTOCOL = "submitted-adapter-v1"
+
+
 def _safe_to_int(v: Any) -> Optional[int]:
     try:
         return int(float(str(v).strip()))
@@ -95,7 +99,9 @@ def _to_bool(v: Any) -> Optional[bool]:
     if isinstance(v, bool):
         return v
     if isinstance(v, (int, float)) and not isinstance(v, bool):
-        return bool(v)
+        # Only explicit binary flags may represent Boolean annotations.
+        # Treating every nonzero number as True made ages 47 and 87 match.
+        return bool(v) if v in (0, 1) else None
     if isinstance(v, str):
         s = v.strip().lower()
         if s in {"true", "1", "yes", "y", "present", "positive"}:
@@ -125,15 +131,18 @@ def _num_match(a: float, b: float) -> bool:
 
 
 def _scalar_match(gt: Any, pred: Any) -> bool:
-    gt_bool = _to_bool(gt)
-    pred_bool = _to_bool(pred)
-    if gt_bool is not None and pred_bool is not None:
-        return gt_bool == pred_bool
-
+    # The gold annotation determines the value kind. Numeric measurements
+    # must be compared numerically, never through Python truthiness. In
+    # particular, a predicted Boolean is not a measured value of 0 or 1.
     gt_num = _to_num(gt)
-    pred_num = _to_num(pred)
-    if gt_num is not None and pred_num is not None:
-        return _num_match(gt_num, pred_num)
+    if gt_num is not None:
+        pred_num = _to_num(pred)
+        return pred_num is not None and _num_match(gt_num, pred_num)
+
+    gt_bool = _to_bool(gt)
+    if gt_bool is not None:
+        pred_bool = _to_bool(pred)
+        return pred_bool is not None and gt_bool == pred_bool
 
     gt_date = _parse_date(gt)
     pred_date = _parse_date(pred)
@@ -192,6 +201,7 @@ def evaluate_extraction(gt_entities_raw: Any, pred_entities: Dict[str, Any]) -> 
             wrong_keys.append(str(gk))
 
     return {
+        "matcher_version": PARAMETER_MATCHER_VERSION,
         "total_params": total,
         "matched_params": matched,
         "all_params_correct": bool(total > 0 and matched == total),
@@ -320,6 +330,7 @@ def judge_case(
         "extraction": extraction,
         "computed_answer": computed,
         "final_correct": bool(correct),
+        "final_answer_protocol": FINAL_ANSWER_PROTOCOL,
     }
 
 
@@ -340,6 +351,8 @@ def summarize(judge_rows: List[Dict[str, Any]]) -> Dict[str, Any]:
             all_params_correct_cases += 1
 
     return {
+        "parameter_matcher_version": PARAMETER_MATCHER_VERSION,
+        "final_answer_protocol": FINAL_ANSWER_PROTOCOL,
         "total_cases": total_cases,
         "final_correct_cases": correct_cases,
         "final_accuracy": round(correct_cases / total_cases, 6) if total_cases else 0.0,

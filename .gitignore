@@ -44,12 +44,23 @@ result/
 judge/
 logs/
 *.log
+# Raw model responses and per-case extraction/judgment traces, even if renamed
+# or moved outside the normal output directories.
+*.steps.jsonl
+*.judge.jsonl
+*.result.jsonl
+*.raw.jsonl
+*.llm_io.jsonl
+judge_result_*.jsonl
+case_steps_*.jsonl
+traces/
 
 # Mutable memory and generated registries
 artifacts/memory/case_memory.jsonl
 artifacts/memory/missing_params_memory.jsonl
 artifacts/memory/tool_build_feedback_memory.jsonl
 artifacts/memory/tool_specs.jsonl
+artifacts/memory/web_rules.jsonl
 artifacts/calculators/**/tool_registry.jsonl
 artifacts/tool_builder/
 rag_docs/

@@ -1,6 +1,7 @@
 {
-  "schema_version": 1,
-  "artifact_status": "anonymous submitted-manuscript aggregate",
+  "schema_version": 2,
+  "artifact_status": "historical paper-reported aggregate; PMR affected by a confirmed matcher defect",
+  "final_manuscript_provenance": "results/final_manuscript_manifest.json",
   "dataset": {
     "name": "MedCalc-Bench Verified",
     "version": "v1.0.7",
@@ -23,7 +24,9 @@
     "disable_unit_normalizer": true,
     "judge_extraction_source": "raw",
     "tool_input_policy": "raw_only",
-    "legacy_evaluator": true
+    "legacy_evaluator": true,
+    "final_answer_protocol": "submitted-adapter-v1",
+    "historical_parameter_matcher": "legacy-nonzero-bool-v1"
   },
   "submitted_aggregate": {
     "correct_cases": 954,
@@ -42,9 +45,23 @@
     "expected_accuracy": 0.949091,
     "expected_runtime_errors": 0
   },
+  "parameter_metric_audit": {
+    "current_matcher_version": "numeric-safe-v2",
+    "reported_pmr_status": "affected by numeric-to-Boolean false matches; not revalidated",
+    "corrected_best_run_pmr": null,
+    "corrected_best_run_error_split": null,
+    "missing_input": "complete raw predictions for the 954-correct submitted best run",
+    "reported_error_split": {
+      "extraction": 80,
+      "generated_tool": 66,
+      "status": "not revalidated; depends on the defective legacy parameter matcher"
+    }
+  },
   "limitations": [
     "The extraction adapter and complete case-level outputs for the submitted best run were absent from the source bundle.",
     "The submitted end-to-end aggregate cannot be independently regenerated without that adapter.",
-    "The post-submission calculator-69 parsing change has been withdrawn; current evaluation retains the submitted protocol and aggregate."
+    "The post-submission calculator-69 parsing change has been withdrawn; final-answer scoring retains the submitted local adapter, not an unchanged official pipeline.",
+    "Current parameter matching is corrected separately; the 97.47% PMR and PMR-derived figures/error attribution remain historical, not validated corrected results.",
+    "Case C is printed as 6.029 mg in the unchanged manuscript, whereas the pinned benchmark row 1002 gold answer is 6.11006 mg."
   ]
 }

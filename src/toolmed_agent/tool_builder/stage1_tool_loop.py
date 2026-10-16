@@ -722,7 +722,7 @@ def main() -> None:
         type=str,
         default=os.path.join(project_root, "models", "Qwen3-8B"),
     )
-    parser.add_argument("--sample_per_calc", type=int, default=5)
+    parser.add_argument("--sample_per_calc", type=int, default=8)
     parser.add_argument("--max_rounds", type=int, default=5)
     parser.add_argument("--rag_top_k", type=int, default=6)
     parser.add_argument("--seed", type=int, default=20260415)
