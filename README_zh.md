@@ -1,92 +1,130 @@
 # 面向患者记录可靠医学计算的工具增强大语言模型
 
-[English](README.md)
+[English](README.md) | [中文](README_zh.md)
 
-作者顺序：Yang Zhong、Ling Luo、Xuanlyu Zhu、Yanhua Wang、Yuanyuan Sun、Jian Wang、Hongfei Lin。
+Yang Zhong、Ling Luo、Xuanlyu Zhu、Yanhua Wang、Yuanyuan Sun、Jian Wang、Hongfei Lin
 
-本公开科研仓库以最终 LaTeX 源码为论文依据；本次不修改论文。当前引用不表示论文已录用、已取得 DOI 或已在 arXiv 发布。
+论文 *Tool-Augmented Large Language Models for Reliable Medical Calculation from Patient Notes* 的代码实现。
 
-论文在 MedCalc-Bench Verified v1.0.7 上报告的最终答案准确率为 **86.73%**。
-本仓库用于下载和复现，不发布旧运行的逐例抽取记录或大模型完整回答。
-评测实现的限制和必要说明集中在[已知问题](results/KNOWN_ISSUES.md)。
+本方法将基于 schema 的参数抽取与可复用 Python 计算器结合：检索并结构化医学计算规则，通过执行反馈生成和验证工具，从患者记录中抽取参数，再调用工具完成计算。论文在 MedCalc-Bench Verified v1.0.7 上的最终答案准确率为 **86.73%**。
 
-本仓库实现一个工具增强的大语言模型框架，将临床文本理解与确定性医学计算解耦：系统检索并结构化计算器规则，生成和验证可复用 Python 工具，按计算器 schema 从患者记录抽取参数，最后调用冻结工具完成可审计计算。
+## 方法概览
 
-![论文图一：方法框架](assets/figure1.png)
+![图 1：方法框架](assets/figure1.png)
 
-上图直接复制最终 LaTeX 工程的 `figures/image1.png`，以 Cockcroft-Gault 肌酐清除率计算器说明完整流程。
-图片未重绘、裁剪或缩放，文件与最终源码原图逐字节一致，来源及校验值见 [figure1.source.json](assets/figure1.source.json)。
+流程包括规则检索与整理、计算器生成与验证、参数抽取和确定性工具执行。仓库提供 55 个计算器工具、计算器专属 schema，以及每个抽取任务的 3 个同类示例。
 
-![论文图二：三个主要阶段的提示词](assets/figure2.png)
+![图 2：规则整理、工具生成和参数抽取的提示词](assets/figure2.png)
 
-图二来自最终 LaTeX 源码的实际排版。代码已按图二统一三阶段的提示词约束，
-共享模板见 [prompts.py](src/toolmed_agent/prompts.py)，[对应关系](docs/PROMPTS.md)说明实际调用入口。
-图中是概括，运行时会填入规则证据、schema、三个同类示例和当前病例，不包含历史模型回答。
+三组提示词统一实现在 [prompts.py](src/toolmed_agent/prompts.py)。输入内容及调用入口见[提示词说明](docs/PROMPTS.md)。
 
-## 核心内容
+## 安装
 
-- 规则驱动的计算器工具生成，以及基于执行反馈的验证与修复。
-- 计算器专属 JSON schema 和每个计算器 3 个同类训练示例。
-- 投稿实验使用的 55 个冻结 GPT-5.5 计算器工具及校验清单。
-- 聚合结果、无密钥配置模板、数据下载脚本和 CPU 回归测试。
-- 仓库不包含 API 密钥、模型权重、投稿论文、完整 LLM 轨迹或完整基准数据。
-
-完整复现还需要论文实验所用的最终 SFT adapter；当前未随仓库提供。
-冻结计算器可独立测试，具体环境、数据和运行命令见[复现指南](docs/REPRODUCTION.md)。
-
-## 快速开始
-
-完整实验面向 Linux、Python 3.10、CUDA 和 NVIDIA GPU；仓库检查及计算器执行可在 CPU 上完成。
+使用 Python 3.10 或更高版本。本地大模型推理需要 Linux、CUDA 和 NVIDIA GPU；计算器执行及仓库测试也可在 CPU 上运行。
 
 ```bash
+git clone https://github.com/benjiesun/tool-augmented-medical-calculation.git
+cd tool-augmented-medical-calculation
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
+```
+
+Windows PowerShell 中使用 `.\.venv\Scripts\Activate.ps1` 激活环境。
+
+本地模型推理及向量检索还需安装：
+
+```bash
+python -m pip install -r requirements-local.txt
+```
+
+## 数据与模型准备
+
+下载基准数据并准备示例库：
+
+```bash
 python scripts/download_data.py
+```
+
+脚本下载 MedCalc-Bench Verified v1.0.7，校验文件哈希，并为每个计算器准备 3 个训练示例。生成文件见[数据说明](data/README.md)。
+
+复制配置模板，在 `runtime.env` 中填写模型路径和 API 地址：
+
+```bash
 cp configs/runtime.env.example runtime.env
 ```
 
-下载脚本会校验 MedCalc-Bench Verified v1.0.7 的 SHA-256，并从不含病例正文的模板重建本地少样本库；完整病例正文不会进入 Git。
+采用论文的抽取配置时，将 `EXTRACTION_MODEL_PATH` 指向 Qwen3-8B，将 `EXTRACTION_SFT_LORA_PATH` 指向抽取任务的 LoRA adapter。**当前版本未提供训练后的 adapter。** 计算器可以独立于抽取模型运行。模型依赖与训练设置见[复现指南](docs/REPRODUCTION.md)。
 
-只做无网络、无 GPU 检查：
+## 使用方法
+
+### 运行单个计算器
+
+```bash
+python scripts/run_calculator.py --input examples/mean_arterial_pressure/input.json
+```
+
+示例输入收缩压 120 mmHg、舒张压 80 mmHg，返回平均动脉压约 93.33 mmHg。输入输出格式见[示例说明](examples/README.md)。
+
+### 运行参数抽取与计算流程
+
+配置 central 和 extraction 模型后运行：
+
+```bash
+toolmed-run --root-dir . --env-file runtime.env --limit 1
+```
+
+使用 `--limit 0` 处理完整测试集。输出保存到 `output/`、`result/` 和 `judge/`。
+
+### 评估计算器
+
+```bash
+python scripts/evaluate_calculators.py
+```
+
+该命令使用标准输入参数评估计算器执行；端到端评估还包括参数抽取。指标定义与答案处理方式见[评测说明](docs/EVALUATION.md)。
+
+### 运行测试
 
 ```bash
 python scripts/validate_artifacts.py
 python -m unittest discover -s tests -v
 ```
 
-无需 GPU、API 密钥或基准下载，即可运行一个计算器示例：
+这些检查无需 GPU 或模型 API。工具生成与消融实验的运行方式见[复现指南](docs/REPRODUCTION.md#tool-generation)。
 
-```bash
-python scripts/run_calculator.py --input examples/mean_arterial_pressure/input.json
+## 仓库结构
+
+| 目录 | 内容 |
+|---|---|
+| `src/toolmed_agent/` | 主流程、参数抽取、工具生成和评测代码 |
+| `artifacts/calculators/` | 55 个计算器实现及校验清单 |
+| `artifacts/memory/` | 计算器名称、来源链接和输入字段 |
+| `configs/` | 运行配置模板 |
+| `data/` | 数据准备和示例元数据 |
+| `examples/` | 计算器输入与预期输出 |
+| `scripts/` | 数据准备、执行和评测命令 |
+| `docs/` | 复现、提示词和评测文档 |
+| `results/` | 论文结果表与实验配置 |
+| `tests/` | CPU 回归测试 |
+
+## 引用
+
+如果本项目对你的研究有帮助，请引用：
+
+```bibtex
+@unpublished{zhong2026toolaugmented,
+  title = {Tool-Augmented Large Language Models for Reliable Medical Calculation from Patient Notes},
+  author = {Zhong, Yang and Luo, Ling and Zhu, Xuanlyu and Wang, Yanhua and Sun, Yuanyuan and Wang, Jian and Lin, Hongfei},
+  year = {2026},
+  note = {Manuscript},
+  url = {https://github.com/benjiesun/tool-augmented-medical-calculation}
+}
 ```
 
-示例输入为收缩压 120 mmHg、舒张压 80 mmHg，输出平均动脉压
-93.33333333333333 mmHg。[examples/README.md](examples/README.md) 提供输入、
-预期输出和使用范围。
+## 许可
 
-按模板配置 central 与 extraction 模型后运行一个病例：
+项目代码采用 [Apache License 2.0](LICENSE)；基准衍生的评测代码和数据文件采用 CC BY-SA 4.0。第三方归属与许可详情见 [NOTICE.md](NOTICE.md)。
 
-```bash
-LIMIT=1 bash scripts/run_pipeline.sh
-```
-
-完整环境、模型和复现限制见 [docs/REPRODUCTION.md](docs/REPRODUCTION.md)。数据许可与第三方归属见 [NOTICE.md](NOTICE.md)。
-
-已拥有完整逐例原始抽取时，可不调用模型而重新统计 PMR：
-
-```bash
-python scripts/rescore_extractions.py --predictions output/private_run.steps.jsonl --output output/parameter_audit.json
-```
-
-需包含全部 1,100 条原始抽取，并使用固定版本测试集；只有旧匹配计数不能重算。
-最终答案的旧判定会原样保留，重新计算参数匹配、类别汇总及错误分组。
-
-## 引用与许可
-
-作者采用最终源码中的七人顺序，包含 Xuanlyu Zhu，不再沿用旧 PDF 的六人名单。
-引用见 [CITATION.cff](CITATION.cff) 和 [英文 README](README.md#citation)；未虚构发表信息。
-
-大部分代码采用 [Apache License 2.0](LICENSE)；`evaluation.py` 的基准评分语义及数据集衍生文件继续受 CC BY-SA 4.0 约束，具体边界见 [NOTICE.md](NOTICE.md)。本项目仅用于科研，不是医疗器械，不得用于诊断、治疗或真实患者决策；运行任何生成代码前都应人工审查并在沙箱中执行。
+本项目仅供科研使用，尚未经过临床验证。生成代码应经审查后在隔离环境中执行，详见 [SECURITY.md](SECURITY.md)。

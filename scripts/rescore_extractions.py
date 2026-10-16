@@ -21,7 +21,7 @@ def main() -> None:
     parser.add_argument("--predictions", type=Path, required=True,
                         help="full pipeline *.steps.jsonl or canonical raw predictions; not judge-only scores")
     parser.add_argument("--test-csv", type=Path, default=ROOT / "data/processed/test_data.csv")
-    parser.add_argument("--output", type=Path, help="optional JSON aggregate output; keep private traces outside Git")
+    parser.add_argument("--output", type=Path, help="path for aggregate metrics JSON (optional)")
     args = parser.parse_args()
     try:
         dataset_bytes = args.test_csv.read_bytes()

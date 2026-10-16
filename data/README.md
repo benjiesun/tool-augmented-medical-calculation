@@ -30,6 +30,4 @@ python scripts/prepare_case_library.py
 ```
 
 The template and manifest are adaptations of MedCalc-Bench Verified and remain
-under CC BY-SA 4.0. See [NOTICE.md](../NOTICE.md). Although the benchmark is
-public and contains synthetic, template-generated, or published-note-derived
-text, do not treat it as de-identified clinical data for unrelated deployment.
+under CC BY-SA 4.0. See [NOTICE.md](../NOTICE.md).

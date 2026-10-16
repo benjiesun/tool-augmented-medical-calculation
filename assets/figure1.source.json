@@ -9,6 +9,6 @@
   "image_sha256": "0b02528ac7dab659d24849165587ded84861b5abefbaee7613d7a56aa7ba5b99",
   "width": 3174,
   "height": 1440,
-  "extraction": "Byte-for-byte copy of the final LaTeX project's original PNG; no redraw, crop, or rescaling. RGB pixels are also identical to the previously released embedded image.",
+  "extraction": "Original PNG from figures/image1.png in the paper's LaTeX source.",
   "caption": "Overview of the proposed method. It is illustrated with the Cockcroft-Gault creatinine-clearance calculator. The workflow retrieves and structures calculator rules, synthesizes and validates an executable calculator tool, extracts calculator inputs from a patient note, and executes the validated tool deterministically."
 }

@@ -1,177 +1,130 @@
 # Tool-Augmented Large Language Models for Reliable Medical Calculation from Patient Notes
 
-[中文说明](README_zh.md)
+[English](README.md) | [中文](README_zh.md)
 
-Yang Zhong, Ling Luo, Xuanlyu Zhu, Yanhua Wang, Yuanyuan Sun, Jian Wang, Hongfei Lin.
+Yang Zhong, Ling Luo, Xuanlyu Zhu, Yanhua Wang, Yuanyuan Sun, Jian Wang, Hongfei Lin
 
-This public research artifact follows the final supplied LaTeX source. The manuscript is not edited by this repository update. No acceptance, DOI, or arXiv publication is implied.
+Code for *Tool-Augmented Large Language Models for Reliable Medical Calculation from Patient Notes*.
 
-The manuscript reports **86.73% final-answer accuracy** on MedCalc-Bench
-Verified v1.0.7. This repository provides code and reproduction instructions,
-not archived per-case predictions or complete LLM responses. Evaluation
-limitations are documented in [known issues](results/KNOWN_ISSUES.md).
+The framework combines schema-constrained parameter extraction with reusable Python calculators. It retrieves and structures medical calculation rules, generates tools with execution-based feedback, and applies the validated tools to parameters extracted from patient notes. The paper reports **86.73% final-answer accuracy** on MedCalc-Bench Verified v1.0.7.
 
-This repository implements a tool-augmented LLM framework that separates clinical-language understanding from deterministic medical calculation. The system retrieves calculator specifications, synthesizes and validates reusable Python tools, extracts schema-constrained parameters from patient notes, and executes the frozen tools to produce auditable calculations.
+## Overview
 
-![Figure 1: overview of the proposed method](assets/figure1.png)
+![Figure 1: framework overview](assets/figure1.png)
 
-Figure 1 from the final manuscript's `figures/image1.png`, illustrated with the Cockcroft-Gault
-creatinine-clearance calculator. This is the original source image; its
-provenance and checksum are recorded in [assets/figure1.source.json](assets/figure1.source.json).
+The workflow consists of rule retrieval and curation, calculator synthesis and validation, parameter extraction, and deterministic tool execution. The repository includes 55 calculator tools, calculator-specific schemas, and three same-calculator demonstrations per extraction task.
 
-![Figure 2: prompts for the three main stages](assets/figure2.png)
+![Figure 2: prompts for rule curation, tool synthesis, and parameter extraction](assets/figure2.png)
 
-Figure 2 from the final LaTeX source summarizes the prompt contracts. The
-three main stages share the templates in
-[src/toolmed_agent/prompts.py](src/toolmed_agent/prompts.py); actual requests
-fill in the rule evidence, schema, examples, and current note. See
-[the prompt-to-code mapping](docs/PROMPTS.md) for details.
-
-## Highlights
-
-- Rule-grounded synthesis and execution-based repair of medical-calculator tools.
-- Calculator-specific JSON schemas and three same-calculator demonstrations for parameter extraction.
-- A frozen set of 55 calculator tools used by the submitted manuscript.
-- Aggregate results, portable configuration templates, data preparation, and CPU-only validation scripts.
-- No API keys, model weights, manuscripts, raw LLM traces, or full benchmark files are committed.
-
-Reproducing the end-to-end result additionally requires the submitted SFT
-adapter, which is not distributed here. The released calculators can be
-tested independently with gold input parameters. See
-[docs/REPRODUCTION.md](docs/REPRODUCTION.md) for requirements and commands.
-
-## Repository layout
-
-```text
-.
-├── artifacts/
-│   ├── calculators/gpt_5_5/   # 55 frozen tools; 53 passed all training checks
-│   └── memory/                # public rule stubs; mutable memory is ignored
-├── assets/                    # manuscript-created figures
-├── configs/                   # secret-free configuration templates
-├── data/processed/            # note-free, licensed few-shot metadata
-├── docs/                      # reproducibility notes
-├── examples/                  # CPU-only calculator input and expected output
-├── results/                   # small reported aggregates and evaluation notes
-├── scripts/                   # download, run, and repository validation
-├── src/toolmed_agent/         # installable Python package
-└── tests/                     # CPU-only regression tests
-```
+The three prompt templates are implemented in [prompts.py](src/toolmed_agent/prompts.py). See [Prompt templates](docs/PROMPTS.md) for their inputs and runtime entry points.
 
 ## Installation
 
-The experiment code targets Linux, Python 3.10, CUDA, and NVIDIA GPUs. Repository validation and calculator execution are CPU-compatible.
+Use Python 3.10 or later. Local LLM inference requires Linux, CUDA, and an NVIDIA GPU; calculator execution and repository tests also run on CPU.
 
 ```bash
+git clone https://github.com/benjiesun/tool-augmented-medical-calculation.git
+cd tool-augmented-medical-calculation
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
 
-For local LLM inference and embedding-based retrieval:
+On Windows PowerShell, activate the environment with `.\.venv\Scripts\Activate.ps1`.
+
+For local model inference and embedding-based retrieval, also install:
 
 ```bash
 python -m pip install -r requirements-local.txt
 ```
 
-`vLLM` and the original shell launchers require a supported Linux/CUDA environment.
+## Data and model preparation
 
-## Data preparation
-
-Benchmark files are not duplicated in this repository. Download the pinned upstream release:
+Download the benchmark and prepare the demonstration library:
 
 ```bash
 python scripts/download_data.py
 ```
 
-The downloader verifies SHA-256 checksums for MedCalc-Bench Verified v1.0.7 and
-reconstructs the ignored few-shot case library from a committed note-free
-template. The included processed metadata are adaptations of that dataset and
-remain subject to CC BY-SA 4.0. See [data/README.md](data/README.md) and
-[NOTICE.md](NOTICE.md).
+The script downloads MedCalc-Bench Verified v1.0.7, verifies file checksums, and prepares three training demonstrations for each calculator. See [Data](data/README.md) for the generated files.
 
-## Configuration
-
-Copy the template and add credentials or local model paths only in your untracked file:
+Configure model paths and API endpoints in `runtime.env`:
 
 ```bash
 cp configs/runtime.env.example runtime.env
 ```
 
-Never commit `runtime.env`. The default template reuses the released calculator tools, disables unit normalization, and writes case-level outputs only to ignored directories.
+For the paper's extraction setup, set `EXTRACTION_MODEL_PATH` to Qwen3-8B and `EXTRACTION_SFT_LORA_PATH` to its extraction LoRA adapter. **The trained adapter is not included in this release.** The calculators can be used independently of the extraction model. Model requirements and training settings are listed in the [reproduction guide](docs/REPRODUCTION.md).
 
-## Run
+## Usage
 
-Validate the repository without a GPU or API:
+### Run a calculator
+
+```bash
+python scripts/run_calculator.py --input examples/mean_arterial_pressure/input.json
+```
+
+The example supplies systolic/diastolic pressures of 120/80 mmHg and returns a mean arterial pressure of approximately 93.33 mmHg. See [examples](examples/README.md) for the input and output formats.
+
+### Run the extraction and calculation pipeline
+
+After configuring the central and extraction models:
+
+```bash
+toolmed-run --root-dir . --env-file runtime.env --limit 1
+```
+
+Use `--limit 0` to process the full test set. Outputs are saved under `output/`, `result/`, and `judge/`.
+
+### Evaluate the released calculators
+
+```bash
+python scripts/evaluate_calculators.py
+```
+
+This evaluates calculator execution using ground-truth input parameters. End-to-end evaluation additionally runs parameter extraction. Metric definitions and answer handling are described in [Evaluation](docs/EVALUATION.md).
+
+### Run tests
 
 ```bash
 python scripts/validate_artifacts.py
 python -m unittest discover -s tests -v
 ```
 
-Try one released calculator without a model, API key, or benchmark download:
+These checks require neither a GPU nor model API access. For tool generation and ablations, see the [reproduction guide](docs/REPRODUCTION.md#tool-generation).
 
-```bash
-python scripts/run_calculator.py --input examples/mean_arterial_pressure/input.json
-```
+## Repository structure
 
-The sample uses systolic/diastolic pressures of 120/80 mmHg and returns
-93.33333333333333 mmHg. Its input, expected output, and scope are documented in
-[examples/README.md](examples/README.md).
-
-After downloading the benchmark, reproduce the submitted 94.91% fixed-tool
-score using ground-truth input entities:
-
-```bash
-python scripts/evaluate_calculators.py
-```
-
-Run a one-case pipeline smoke test after configuring reachable central and
-extraction models:
-
-```bash
-LIMIT=1 bash scripts/run_pipeline.sh
-```
-
-Equivalent direct invocation:
-
-```bash
-toolmed-run --root-dir . --env-file runtime.env --limit 1
-```
-
-Tool generation and full experimental reproduction require the model endpoints or local checkpoints described in [docs/REPRODUCTION.md](docs/REPRODUCTION.md).
-
-To audit an existing complete raw prediction archive without rerunning an LLM:
-
-```bash
-python scripts/rescore_extractions.py --predictions output/private_run.steps.jsonl --output output/parameter_audit.json
-```
-
-The command requires all 1,100 raw extraction objects and the pinned test CSV.
-Stored match counts alone are insufficient. It preserves archived final
-judgments and produces corrected parameter/category/error-group aggregates.
+| Directory | Contents |
+|---|---|
+| `src/toolmed_agent/` | Pipeline, parameter extraction, tool generation, and evaluation |
+| `artifacts/calculators/` | 55 calculator implementations and checksums |
+| `artifacts/memory/` | Calculator names, source links, and input-field metadata |
+| `configs/` | Runtime configuration template |
+| `data/` | Dataset preparation and demonstration metadata |
+| `examples/` | Calculator input and expected output |
+| `scripts/` | Data preparation, execution, and evaluation commands |
+| `docs/` | Reproduction, prompt, and evaluation documentation |
+| `results/` | Paper result tables and experiment configuration |
+| `tests/` | CPU regression tests |
 
 ## Citation
 
-The seven-author order follows the final `main.tex`, not the older six-author
-PDF bundled alongside it. See [CITATION.cff](CITATION.cff).
+If you use this code in your research, please cite:
 
 ```bibtex
 @unpublished{zhong2026toolaugmented,
   title = {Tool-Augmented Large Language Models for Reliable Medical Calculation from Patient Notes},
   author = {Zhong, Yang and Luo, Ling and Zhu, Xuanlyu and Wang, Yanhua and Sun, Yuanyuan and Wang, Jian and Lin, Hongfei},
   year = {2026},
-  note = {Manuscript; associated research code},
+  note = {Manuscript},
   url = {https://github.com/benjiesun/tool-augmented-medical-calculation}
 }
 ```
 
-## License and intended use
+## License
 
-Most source code is released under the [Apache License 2.0](LICENSE).
-`src/toolmed_agent/evaluation.py` and dataset-derived files remain under
-CC BY-SA 4.0 as described in [NOTICE.md](NOTICE.md).
+Project code is released under [Apache License 2.0](LICENSE), except the benchmark-derived evaluator and data artifacts, which are covered by CC BY-SA 4.0. See [NOTICE.md](NOTICE.md) for attribution and licensing details.
 
-This software is a research artifact, not a medical device. It has not been validated for clinical deployment and must not be used to diagnose, treat, or make patient-care decisions. Generated Python tools execute code and should be reviewed and sandboxed before use.
+For research use only; not validated for clinical use. Review and isolate generated code before execution; see [SECURITY.md](SECURITY.md).

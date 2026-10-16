@@ -1,7 +1,6 @@
 """Shared prompt contracts transcribed from final-manuscript Figure 2.
 
-Only task data (evidence, schema, examples, and patient note) are interpolated.
-These templates contain no historical model answers or patient-note archive.
+Task data (evidence, schema, examples, and patient note) are interpolated at runtime.
 """
 
 from __future__ import annotations

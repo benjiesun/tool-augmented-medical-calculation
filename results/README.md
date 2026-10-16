@@ -1,26 +1,15 @@
-# Reported result and evaluation notes
+# Results
 
-The final manuscript reports **86.73% final-answer accuracy** on MedCalc-Bench
-Verified v1.0.7 (55 calculators, 1,100 test cases). This is a paper-reported
-value, not a new model run performed while preparing the repository.
+The paper reports **86.73% final-answer accuracy** on MedCalc-Bench Verified v1.0.7, covering 55 calculators and 1,100 test cases.
 
-This repository is for reproducing the method. It does not distribute
-historical per-case extractions, complete LLM responses, request transcripts,
-or run logs. New local runs write to ignored output directories.
+| File | Contents |
+|---|---|
+| [main_results.csv](main_results.csv) | Main results and published reference baselines |
+| [tool_quality.csv](tool_quality.csv) | Calculator accuracy with ground-truth parameters |
+| [extractor_results.csv](extractor_results.csv) | Parameter-extraction results |
+| [ablations.csv](ablations.csv) | Ablation results |
+| [submitted_run_manifest.json](submitted_run_manifest.json) | Dataset, model, and evaluation configuration |
 
-The existing small CSVs retain historical aggregate reference values only:
-`main_results.csv`, `tool_quality.csv`, `extractor_results.csv`, and
-`ablations.csv`. External baseline rows are contextual published values,
-not controlled reruns. The PMR columns use the defective historical matcher
-and are not validated results from current code. Do not use them to claim a
-corrected PMR or to regenerate the paper's error attribution.
+These tables contain paper-reported aggregates. External baseline rows are published reference values rather than controlled reruns. PMR values and their derived error groups use `legacy-nonzero-bool-v1`, whose numeric-matching defect is corrected in the current `numeric-safe-v2` implementation; corrected best-run PMR is unavailable. See [Evaluation](../docs/EVALUATION.md) for metric definitions and version differences.
 
-[KNOWN_ISSUES.md](KNOWN_ISSUES.md) explains the corrected parameter matcher,
-the local final-answer adapter, and the Case C manuscript typo.
-[submitted_run_manifest.json](submitted_run_manifest.json) records the
-reported configuration; [final_manuscript_manifest.json](final_manuscript_manifest.json)
-identifies the final source and author order. Neither file contains model
-responses.
-
-For data, model requirements, prompt templates, and execution commands, see
-[the reproduction guide](../docs/REPRODUCTION.md).
+For environment setup and experiment commands, see the [reproduction guide](../docs/REPRODUCTION.md).

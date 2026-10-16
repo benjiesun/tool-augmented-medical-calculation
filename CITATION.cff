@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "Please cite the associated manuscript using the seven-author record in README.md. No publication acceptance is implied."
+message: "If you use this software, please cite it using the following metadata."
 type: software
 title: "Tool-Augmented Large Language Models for Reliable Medical Calculation from Patient Notes"
 authors:

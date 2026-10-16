@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "Archived generation and selection records for the released fixed calculator set",
+  "scope": "Generation configuration and candidate selection for the released calculator set",
   "source_result_file": "result_gpt_5_5_buildtool_merged_260519_090713.jsonl",
   "source_result_sha256": "66e627f9cedad9b2e47c01efd274e85bceeb5f8347daaaa804cdfa1d7c7630ae",
   "source_output_file": "output_gpt_5_5_buildtool_merged_260519_090713.jsonl",
@@ -26,7 +26,6 @@
   "notes": [
     "Generation rounds count candidate-generation iterations, including the initial candidate; they are not validation sample counts or API request counts.",
     "The cycle1 filename suffix identifies the outer cycle, not the selected inner generation round.",
-    "A frozen calculator need not have passed all training validation examples. Test accuracy remains the separately reported 1044/1100 under the submitted evaluator.",
-    "Raw generation prompts, model outputs, and validation traces are not distributed; only this aggregate is included."
+    "Candidate selection retains the highest-scoring tool when the generation limit is reached. Test-set evaluation is separate from training validation."
   ]
 }

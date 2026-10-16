@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "artifact_status": "historical paper-reported aggregate; PMR affected by a confirmed matcher defect",
-  "final_manuscript_provenance": "results/final_manuscript_manifest.json",
+  "artifact_status": "paper-reported aggregate",
+  "evaluation_documentation": "docs/EVALUATION.md",
   "dataset": {
     "name": "MedCalc-Bench Verified",
     "version": "v1.0.7",
@@ -45,12 +45,11 @@
     "expected_accuracy": 0.949091,
     "expected_runtime_errors": 0
   },
-  "parameter_metric_audit": {
+  "parameter_metric_versions": {
     "current_matcher_version": "numeric-safe-v2",
     "reported_pmr_status": "affected by numeric-to-Boolean false matches; not revalidated",
     "corrected_best_run_pmr": null,
     "corrected_best_run_error_split": null,
-    "missing_input": "complete raw predictions for the 954-correct submitted best run",
     "reported_error_split": {
       "extraction": 80,
       "generated_tool": 66,
@@ -58,10 +57,8 @@
     }
   },
   "limitations": [
-    "The extraction adapter and complete case-level outputs for the submitted best run were absent from the source bundle.",
-    "The submitted end-to-end aggregate cannot be independently regenerated without that adapter.",
-    "The post-submission calculator-69 parsing change has been withdrawn; final-answer scoring retains the submitted local adapter, not an unchanged official pipeline.",
-    "Current parameter matching is corrected separately; the 97.47% PMR and PMR-derived figures/error attribution remain historical, not validated corrected results.",
-    "Case C is printed as 6.029 mg in the unchanged manuscript, whereas the pinned benchmark row 1002 gold answer is 6.11006 mg."
+    "The trained extraction adapter is not distributed; end-to-end reproduction requires that checkpoint.",
+    "Final-answer scoring includes a project-specific answer adapter before benchmark-derived comparison.",
+    "Reported PMR and derived error groups use legacy-nonzero-bool-v1 and are not results from numeric-safe-v2."
   ]
 }

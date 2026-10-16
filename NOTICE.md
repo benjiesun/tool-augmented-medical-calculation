@@ -10,8 +10,8 @@ MedCalc-Bench-Verified v1.0.7
 (`evaluation/evaluate.py`). That file is marked and distributed under
 CC BY-SA 4.0, with modifications for safe parsing, extraction metrics,
 equivalent cross-platform date handling, numeric-safe parameter matching,
-and the submitted project's separate answer adapter. The post-submission calculator-69 normalization has been
-withdrawn; see `results/KNOWN_ISSUES.md`.
+and a project-specific answer adapter. Evaluation behavior is documented in
+[docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## MedCalc-Bench Verified
 
@@ -33,12 +33,7 @@ Model weights, LoRA adapters, proprietary model outputs, and API credentials are
 
 ## Figures
 
-`assets/figure1.png` is a byte-for-byte copy of Figure 1 in the final LaTeX
-project supplied by the project author. It has not been redrawn or
-rescaled. `assets/figure1.source.json` records the source archive and LaTeX
-checksums, image path, dimensions, and released PNG checksum. Existing logos and brand
-marks shown in that figure remain the property of their respective owners.
-
-`assets/figure2.png` is a rendered extraction of Figure 2 and its caption
-from the unmodified final LaTeX source, not a redrawn prompt diagram.
-`assets/figure2.source.json` records its source hashes and rendering region.
+`assets/figure1.png` and `assets/figure2.png` reproduce Figures 1 and 2 of the
+associated paper. Their `.source.json` files record source hashes, image
+dimensions, and extraction details. Logos and brand marks shown in the
+figures remain the property of their respective owners.

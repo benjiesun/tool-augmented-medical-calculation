@@ -9,6 +9,6 @@
   "image_sha256": "594fd03b2b652fd27e9c8b848f4580ac71f3f9714cb02f057faf896347472ece",
   "width": 1460,
   "height": 890,
-  "extraction": "Rendered from the unmodified final main.tex, not from the stale bundled PDF or unused figures/image2.png. Poppler pdftoppm at 200 dpi, page 4, crop x=120 y=120 width=1460 height=890 pixels. Includes the original caption; no redraw.",
+  "extraction": "Rendered from main.tex with Poppler pdftoppm at 200 dpi: page 4, x=120, y=120, width=1460, height=890 pixels. Includes the figure caption.",
   "caption": "Condensed prompts used for calculator rule curation, executable tool synthesis, and schema-constrained parameter extraction."
 }

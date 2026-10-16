@@ -164,11 +164,10 @@ def _build_rag_docs_if_needed(base_dir: str, python_bin: str, train_csv: str, fo
     builder_path = os.path.join(base_dir, "build_rag_docs.py")
     if not os.path.isfile(builder_path):
         raise RuntimeError(
-            "The private RAG preparation script and captured rule corpus are "
-            "not distributed in this repository. Supply a prepared, authorized "
-            "corpus with --stage1_docs_jsonl, or provide the original private "
-            "build_rag_docs.py and its input files in --base_dir. "
-            "The public rule stub is not a complete tool-generation corpus."
+            "No prepared rule corpus or build_rag_docs.py was found. "
+            "Pass a rule corpus with --stage1_docs_jsonl; see "
+            "docs/REPRODUCTION.md for the JSONL format. Alternatively, "
+            "provide build_rag_docs.py and its inputs in --base_dir."
         )
 
     ensure_dir(rag_docs_dir)

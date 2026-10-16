@@ -1,62 +1,35 @@
-# Figure 2 and executable prompt templates
+# Prompt templates
 
-Figure 2 is explicitly a **condensed** prompt description. The repository
-uses its instructions as the shared contract for the three main stages.
-Actual requests additionally contain the calculator-specific inputs listed
-in the figure, so they are not byte-for-byte copies of an image.
+Figure 2 summarizes the instructions used for rule curation, tool synthesis, and parameter extraction. Shared templates are defined in [prompts.py](../src/toolmed_agent/prompts.py), with contract identifier `final-manuscript-figure2-v1`.
 
-![Figure 2: prompt overview from the final manuscript](../assets/figure2.png)
+![Figure 2: prompt overview](../assets/figure2.png)
 
-The original figure is rendered from the unmodified final LaTeX source.
-The source hash and rendering region are recorded in
-[figure2.source.json](../assets/figure2.source.json).
+## Runtime entry points
 
-## Source of truth in code
-
-All three contracts are in [src/toolmed_agent/prompts.py](../src/toolmed_agent/prompts.py),
-version `final-manuscript-figure2-v1`.
-
-| Figure 2 panel | Shared builder | Runtime use |
+| Stage | Template builder | Runtime entry point |
 |---|---|---|
-| Rule curation | `build_rule_curation_messages` | Main pipeline rule curator; returns both rule specification and schema |
-| Tool synthesis | `build_tool_synthesis_messages` | Standalone retrieval builder and on-demand tool writer |
-| Parameter extraction | `build_extraction_prompt` | Schema-based extractor and its generic fallback request |
+| Rule curation | `build_rule_curation_messages` | `CentralHost._organize_web_rule_with_llm` in [pipeline.py](../src/toolmed_agent/pipeline.py) |
+| Tool synthesis | `build_tool_synthesis_messages` | [Standalone builder](../src/toolmed_agent/tool_builder/prompts.py) and [on-demand writer](../src/toolmed_agent/tool_generation.py) |
+| Parameter extraction | `build_extraction_prompt` | Schema-based and generic requests in [extraction.py](../src/toolmed_agent/extraction.py) |
 
-Rule curation requests the formula/scoring rule, inputs, conditions, boundary
-cases, output contract, evidence, and schema including types, units, enums,
-and nullable/default behavior. Both rule and schema are retained in local
-memory for tool construction.
+## Rule curation
 
-Tool synthesis receives the curated rules, specification-derived schema,
-training examples, expected output type, and rule references. Its missing
-input behavior is benchmark-specified, not an unconditional `N/A` instruction.
-Numeric/text/Boolean/date/unit parsing and deterministic execution follow
-the figure. The execution harness still rejects unsafe generated code.
+Inputs are the calculator name, question, retrieved evidence snippets, and source links. The model returns a rule specification and a calculator schema as JSON. The specification covers the formula or scoring rule, inputs, conditions, boundary cases, output format, and supporting evidence. The schema defines required fields, value types, units, categorical values, and nullable/default behavior.
 
-Extraction receives required fields, output JSON schema, field specifications,
-three same-calculator training demonstrations, question, and current note.
-It preserves allowed source units, uses null for unsupported fields, false
-for absent Boolean criteria, and negative enum values for explicit negative
-evidence. There is no extra instruction to calculate mean arterial pressure
-inside the extraction prompt or invent unsupported non-null values.
+## Tool synthesis
 
-Clinical schemas and demonstration metadata are not LLM run outputs. The
-downloader restores demonstration notes locally from the pinned training
-data; no historical model response or full request transcript is committed.
+Inputs are the curated rule, schema, expected output type, training examples, and retrieved references. The model returns `required_entities` and Python source for `calc(relevant)`. The instructions cover scalar and structured inputs, number/text/Boolean/date/unit parsing, conditional branches, rounding, and benchmark-specific missing-input behavior. Tools must be deterministic and use no external dependencies.
 
-## Scope
+Execution feedback is appended when a candidate fails validation. The validation set is reused across the repair rounds.
 
-Figure 2 describes the full workflow. Validation feedback adds repair
-instructions when a candidate fails. The intentionally no-web ablation,
-optional unit-normalization stage, and optional prose formatter are separate
-from these three main prompt panels.
+## Parameter extraction
 
-This alignment changes the reusable prompt code, not the frozen 55 tools or
-the manuscript. It is not a claim that an unrecorded historical request was
-identical or that the revised templates have been rerun to reproduce 86.73%.
-The final SFT adapter is still needed for complete reproduction.
+Inputs are the calculator identifier and name, question, required fields, JSON schema, field specifications, three same-calculator training examples, and the patient note. The model returns a single JSON object containing the required parameters.
 
-`tests/test_prompts.py` checks that runtime entry points use the shared
-contracts, specification schemas exist for all 55 released calculators,
-extraction includes three examples, and tool validation samples training
-data rather than test labels.
+Measured values use `[value, unit]`, preserving allowed source units. Unsupported required fields use `null`; absent Boolean criteria use `false`; explicit negative evidence maps to the relevant negative categorical value.
+
+## Scope and versions
+
+Figure 2 shows condensed instructions; runtime requests also contain calculator-specific evidence and case inputs. The no-web ablation, optional unit normalization, and optional prose formatting have separate prompts.
+
+The current templates implement the Figure 2 contract. The paper's reported accuracy comes from its experiment run; no end-to-end benchmark result is provided for this template revision. The released calculator files are versioned separately by their SHA-256 manifest.
