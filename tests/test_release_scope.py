@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/validate_artifacts.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "src/validate_artifacts.py"
 SPEC = importlib.util.spec_from_file_location("validate_artifacts", SCRIPT)
 VALIDATOR = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(VALIDATOR)

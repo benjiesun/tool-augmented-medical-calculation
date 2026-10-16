@@ -11,7 +11,7 @@ MedCalc-Bench-Verified v1.0.7
 CC BY-SA 4.0, with modifications for safe parsing, extraction metrics,
 equivalent cross-platform date handling, numeric-safe parameter matching,
 and a project-specific answer adapter. Evaluation behavior is documented in
-[docs/EVALUATION.md](docs/EVALUATION.md).
+[Evaluation](EVALUATION.md).
 
 ## MedCalc-Bench Verified
 
@@ -33,7 +33,18 @@ Model weights, LoRA adapters, proprietary model outputs, and API credentials are
 
 ## Figures
 
-`assets/figure1.png` and `assets/figure2.png` reproduce Figures 1 and 2 of the
+`docs/figures/figure1.png` and `docs/figures/figure2.png` reproduce Figures 1 and 2 of the
 associated paper. Their `.source.json` files record source hashes, image
 dimensions, and extraction details. Logos and brand marks shown in the
 figures remain the property of their respective owners.
+
+## Safe execution
+
+Keep API credentials in the Git-ignored `runtime.env` file. If a credential
+is exposed, revoke or rotate it. Do not include credentials or patient
+information in public issues.
+
+Review generated Python tools before execution and run them in an isolated,
+low-privilege environment. Do not expose the tool API to an untrusted network.
+The calculator implementations are research software, not clinically
+validated tools.

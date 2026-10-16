@@ -34,7 +34,7 @@ jobs:
           python -m pip install -e .
 
       - name: Validate repository artifacts
-        run: python scripts/validate_artifacts.py
+        run: python src/validate_artifacts.py
 
       - name: Run CPU-only regression tests
         run: python -m unittest discover -s tests -v

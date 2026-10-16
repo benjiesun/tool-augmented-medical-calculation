@@ -4,7 +4,7 @@
 # adapted from MedCalc-Bench-Verified v1.0.7:
 # https://github.com/nikhilk7153/MedCalc-Bench-Verified/blob/v1.0.7/evaluation/evaluate.py
 # This version retains the submitted project's answer adapter, safe parsing,
-# extraction metrics, and equivalent portable date handling. See NOTICE.md.
+# extraction metrics, and equivalent portable date handling. See docs/NOTICE.md.
 
 import ast
 import json

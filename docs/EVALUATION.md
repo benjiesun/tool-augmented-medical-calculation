@@ -44,7 +44,7 @@ The earlier `legacy-nonzero-bool-v1` matcher treated nonzero numeric values as `
 To evaluate parameters from a complete local prediction file:
 
 ```bash
-python scripts/rescore_extractions.py --predictions output/run.steps.jsonl --output output/parameter_metrics.json
+python src/rescore_extractions.py --predictions output/run.steps.jsonl --output output/parameter_metrics.json
 ```
 
 The script requires all 1,100 raw extractions and the pinned test CSV. It preserves recorded final-answer judgments while recomputing parameter metrics and diagnostic groups. Stored match counts alone are insufficient. A wrong final answer with matching parameters does not by itself distinguish tool-code errors from answer-conversion errors.
@@ -63,4 +63,4 @@ The released tool matches `hydrocortisone` as `cortisone` because of its substri
 
 ## Commands
 
-Run `python scripts/evaluate_calculators.py` for gold-input tool evaluation. Run `toolmed-run --root-dir . --env-file runtime.env --limit 0` for full-pipeline evaluation with configured models. Model requirements are described in the [reproduction guide](REPRODUCTION.md).
+Run `python src/evaluate_calculators.py` for gold-input tool evaluation. Run `toolmed-run --root-dir . --env-file runtime.env --limit 0` for full-pipeline evaluation with configured models. Model requirements are described in the [reproduction guide](REPRODUCTION.md).

@@ -159,8 +159,8 @@ def validate_manuscript_figure(errors: list[str]) -> None:
 
 
 def _validate_figure(name: str, errors: list[str]) -> None:
-    image_path = ROOT / "assets" / f"{name}.png"
-    provenance_path = ROOT / "assets" / f"{name}.source.json"
+    image_path = ROOT / "docs" / "figures" / f"{name}.png"
+    provenance_path = ROOT / "docs" / "figures" / f"{name}.source.json"
     try:
         metadata = json.loads(provenance_path.read_text(encoding="utf-8"))
         data = image_path.read_bytes()

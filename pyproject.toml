@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Tool-augmented LLM framework for reliable medical calculation from patient notes"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache-2.0 AND CC-BY-SA-4.0; see NOTICE.md"}
+license = {text = "Apache-2.0 AND CC-BY-SA-4.0; see docs/NOTICE.md"}
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",

@@ -2,7 +2,7 @@
 
 Figure 2 summarizes the instructions used for rule curation, tool synthesis, and parameter extraction. Shared templates are defined in [prompts.py](../src/toolmed_agent/prompts.py), with contract identifier `final-manuscript-figure2-v1`.
 
-![Figure 2: prompt overview](../assets/figure2.png)
+![Figure 2: prompt overview](figures/figure2.png)
 
 ## Runtime entry points
 

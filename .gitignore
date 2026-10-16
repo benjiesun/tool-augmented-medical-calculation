@@ -4,7 +4,6 @@
 *.env
 runtime.env
 !*.env.example
-!configs/*.example
 *.pem
 *.key
 

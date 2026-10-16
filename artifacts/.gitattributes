@@ -1,0 +1,3 @@
+# Preserve calculator checksums across Windows and Linux checkouts.
+*.py text eol=lf
+SHA256SUMS text eol=lf

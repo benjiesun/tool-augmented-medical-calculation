@@ -1,5 +1,0 @@
-tool_setting,tool_model,runtime_errors,tool_accuracy_percent,final_accuracy_percent
-Direct generation,GPT-5.5,0,74.45,73.27
-Retrieval + repair,Qwen3.5-Plus,21,84.45,76.18
-Retrieval + repair,GPT-5.3-Codex,4,89.00,82.82
-Retrieval + repair,GPT-5.5,0,94.91,86.73

@@ -7,12 +7,12 @@ Calculator execution and tests require Python 3.10 or later. Local LLM inference
 ```bash
 python -m pip install -r requirements.txt
 python -m pip install -e .
-python -m pip install -r requirements-local.txt
-python scripts/download_data.py
-cp configs/runtime.env.example runtime.env
+python -m pip install -e ".[local,retrieval]"
+python src/download_data.py
+cp data/runtime.env.example runtime.env
 ```
 
-The local-inference dependencies are optional when using model APIs or running calculators only. Dependency ranges are specified in `pyproject.toml` and the requirements files; they are not an exact training-environment lock.
+The local-inference dependencies are optional when using model APIs or running calculators only. Dependency ranges are specified in `pyproject.toml` and `requirements.txt`; they are not an exact training-environment lock.
 
 For the paper's extraction model, provide Qwen3-8B and its trained LoRA adapter:
 
@@ -71,12 +71,12 @@ Run one case after configuring the central and extraction models:
 toolmed-run --root-dir . --env-file runtime.env --limit 1
 ```
 
-Use `--limit 0` for the full test set. On Linux, `LIMIT=1 bash scripts/run_pipeline.sh` is an equivalent launcher. Case outputs, execution results, and evaluation records are written to `output/`, `result/`, and `judge/`; these directories are ignored by Git. `TRACE_FULL_LLM_IO=0` disables full request/response logging.
+Use `--limit 0` for the full test set. Case outputs, execution results, and evaluation records are written to `output/`, `result/`, and `judge/`; these directories are ignored by Git. `TRACE_FULL_LLM_IO=0` disables full request/response logging.
 
 To evaluate the calculators independently using ground-truth parameters:
 
 ```bash
-python scripts/evaluate_calculators.py
+python src/evaluate_calculators.py
 ```
 
 The released set scores 1,044/1,100 with no runtime errors under `submitted-adapter-v1`. This command tests tool execution; reproducing end-to-end accuracy also requires the extraction model. See [Evaluation](EVALUATION.md) for scoring details.
@@ -109,9 +109,9 @@ toolmed-build-tools-no-web --base_dir . --train_csv data/processed/train_data.cs
 ## Validation
 
 ```bash
-python scripts/validate_artifacts.py
+python src/validate_artifacts.py
 python -m unittest discover -s tests -v
-python scripts/run_calculator.py --input examples/mean_arterial_pressure/input.json
+python src/run_calculator.py --input data/examples/mean_arterial_pressure/input.json
 ```
 
 These CPU checks cover artifact integrity, calculator execution, parameter matching, answer conversion, prompt entry points, and training/test separation. They do not require model credentials.

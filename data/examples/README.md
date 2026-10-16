@@ -7,7 +7,7 @@ key, patient note, or downloaded benchmark.
 From the repository root:
 
 ```bash
-python scripts/run_calculator.py --input examples/mean_arterial_pressure/input.json
+python src/run_calculator.py --input data/examples/mean_arterial_pressure/input.json
 ```
 
 The [input](mean_arterial_pressure/input.json) contains calculator ID 5 and

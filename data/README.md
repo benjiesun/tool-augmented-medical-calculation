@@ -1,9 +1,13 @@
 # Data
 
+[runtime.env.example](runtime.env.example) provides the runtime configuration
+template. [examples/](examples/README.md) contains a calculator input and its
+expected output.
+
 The complete benchmark is downloaded from the pinned upstream source and is not committed here.
 
 ```bash
-python scripts/download_data.py
+python src/download_data.py
 ```
 
 The command downloads and verifies:
@@ -20,14 +24,14 @@ The two committed processed artifacts are:
 - `processed/case_library_template_v1_8.json`: calculator schemas and three
   same-calculator demonstration records, with every patient-note field blank.
 
-`scripts/download_data.py` reconstructs the ignored
+`src/download_data.py` reconstructs the ignored
 `processed/case_library_merged_v1_8.json` from the pinned training CSV and the
 committed row-number metadata. This keeps complete patient-note text out of Git
 while preserving a deterministic preparation path. To rebuild it separately:
 
 ```bash
-python scripts/prepare_case_library.py
+python src/prepare_case_library.py
 ```
 
 The template and manifest are adaptations of MedCalc-Bench Verified and remain
-under CC BY-SA 4.0. See [NOTICE.md](../NOTICE.md).
+under CC BY-SA 4.0. See [NOTICE.md](../docs/NOTICE.md).
